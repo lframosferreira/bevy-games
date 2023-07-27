@@ -1,4 +1,4 @@
-use crate::game::snake::SNAKE_BODY_PART_SIZE;
+use super::SNAKE_BODY_PART_SIZE;
 use bevy::prelude::*;
 
 pub struct SnakeBodyPart {
@@ -24,4 +24,12 @@ impl Default for Snake {
             body: vec![SnakeBodyPart::default()],
         }
     }
+}
+
+#[derive(Component)]
+pub enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
 }
