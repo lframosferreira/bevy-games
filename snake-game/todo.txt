@@ -1,0 +1,1 @@
+1. Change name of player struct to snake
