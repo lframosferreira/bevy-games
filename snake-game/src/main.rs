@@ -12,7 +12,7 @@ fn main() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 resolution: (1000.0, 600.0).into(),
-                title: "Snake".to_string(),
+                title: "Bevy Snake".to_string(),
                 ..default()
             }),
             ..default()

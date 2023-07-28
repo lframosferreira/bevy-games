@@ -24,7 +24,7 @@ pub fn exit_game(
 
 pub fn handle_game_over(mut commands: Commands, mut game_over_event_reader: EventReader<GameOver>) {
     for event in game_over_event_reader.iter() {
-        println!("Final score: {}", event.score.to_string());
+        println!("Final score: {}", event.score);
         commands.insert_resource(NextState(Some(AppState::GameOver)));
     }
 }

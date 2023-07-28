@@ -1,6 +1,6 @@
+use bevy::prelude::*;
 use bevy::sprite::collide_aabb::collide;
 use bevy::window::PrimaryWindow;
-use bevy::{prelude::*, render::view::window};
 use rand::prelude::*;
 
 use crate::game::fruit::components::Fruit;
