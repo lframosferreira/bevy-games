@@ -1,5 +1,10 @@
-use bevy::prelude::*;
+use bevy::sprite::collide_aabb::collide;
 use bevy::window::PrimaryWindow;
+use bevy::{prelude::*, render::view::window};
+use rand::prelude::*;
+
+use crate::game::fruit::components::Fruit;
+use crate::game::score::resources::Score;
 
 use super::{
     components::{Direction, Snake},
@@ -74,6 +79,45 @@ pub fn sprite_movement(
             *logo = Direction::Down;
         } else if transform.translation.y < 0. {
             *logo = Direction::Up;
+        }
+    }
+}
+
+pub fn handle_eat_fruit(
+    mut commands: Commands,
+    mut snake_query: Query<&Transform, With<Snake>>,
+    fruit_query: Query<(Entity, &Transform), With<Fruit>>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    asset_server: Res<AssetServer>,
+    score: Res<Score>,
+) {
+    if let Ok(snake_transform) = snake_query.get_single_mut() {
+        if let Ok((fruit_entity, fruit_transform)) = fruit_query.get_single() {
+            if collide(
+                snake_transform.translation,
+                Vec2::new(40.0, 40.0),
+                fruit_transform.translation,
+                Vec2::new(40.0, 40.0),
+            )
+            .is_some()
+            {
+                commands.entity(fruit_entity).despawn();
+                // possivelmente isso aqui pode virar uma funcao
+                let window: &Window = window_query.get_single().unwrap();
+                let fruit_x_pos: f32 = random::<f32>() * window.width();
+                let fruit_y_pos: f32 = random::<f32>() * window.height();
+                commands.spawn((
+                    SpriteBundle {
+                        transform: Transform::from_xyz(fruit_x_pos, fruit_y_pos, 0.0),
+                        texture: asset_server.load("sprites/fruit.png"),
+                        ..default()
+                    },
+                    Fruit {
+                        x_pos: fruit_x_pos,
+                        y_pos: fruit_y_pos,
+                    },
+                ));
+            }
         }
     }
 }
