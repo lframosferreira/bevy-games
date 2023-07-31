@@ -1,22 +1,21 @@
-use crate::game::fruit::systems::_spawn_fruit;
+use super::components::{Direction, Snake};
+use crate::game::fruit::systems::spawn_fruit;
 use crate::game::score::resources::Score;
 use crate::game::{fruit::components::Fruit, BLOCK_SIZE};
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb::collide;
 use bevy::window::PrimaryWindow;
 
-use super::components::{Direction, Snake};
-
-pub fn spawn_snake(
-    mut commands: Commands,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-    asset_server: Res<AssetServer>,
-) {
+pub fn spawn_snake(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>) {
     let window: &Window = window_query.get_single().unwrap();
 
     commands.spawn((
         SpriteBundle {
-            texture: asset_server.load("sprites/body.png"),
+            sprite: Sprite {
+                color: Color::rgb(0.25, 0.75, 0.25),
+                custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
+                ..default()
+            },
             transform: Transform::from_xyz(window.width() / 2., window.height() / 2.0, 0.),
             ..default()
         },
@@ -83,7 +82,6 @@ pub fn handle_eat_fruit(
     mut snake_query: Query<&Transform, With<Snake>>,
     fruit_query: Query<(Entity, &Transform), With<Fruit>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
-    asset_server: Res<AssetServer>,
     score: Res<Score>,
 ) {
     if let Ok(snake_transform) = snake_query.get_single_mut() {
@@ -101,7 +99,7 @@ pub fn handle_eat_fruit(
                 // possivelmente isso aqui pode virar uma funcao
                 // spawn de nova frutinha
                 // cor aleatoria / fruta aleatoria
-                _spawn_fruit(window_query, commands, asset_server);
+                spawn_fruit(commands, window_query);
             }
         }
     }

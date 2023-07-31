@@ -1,5 +1,5 @@
+use super::{HEAD_X, HEAD_Y};
 use crate::game::BLOCK_SIZE;
-
 use bevy::prelude::*;
 
 pub struct SnakeBodyPart {
@@ -22,8 +22,8 @@ pub struct Snake {
 impl Default for Snake {
     fn default() -> Self {
         Snake {
-            head_x_pos: 500.0,
-            head_y_pos: 300.0,
+            head_x_pos: HEAD_X,
+            head_y_pos: HEAD_Y,
             body: vec![SnakeBodyPart::default()],
         }
     }

@@ -1,15 +1,13 @@
-use bevy::prelude::*;
-
 mod fruit;
 mod score;
-mod snake;
+pub mod snake;
 mod systems;
 
+use crate::events::GameOver;
+use bevy::prelude::*;
 use fruit::FruitPlugin;
 use score::ScorePlugin;
 use snake::SnakePlugin;
-
-use crate::events::GameOver;
 
 const BLOCK_SIZE: f32 = 40.0;
 
