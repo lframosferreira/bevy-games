@@ -8,9 +8,6 @@ mod systems;
 
 use self::systems::*;
 
-pub const SNAKE_BODY_PART_SIZE: f32 = 40.0;
-pub const SNAKE_SPEED: f32 = 40.0;
-
 pub struct SnakePlugin;
 
 impl Plugin for SnakePlugin {

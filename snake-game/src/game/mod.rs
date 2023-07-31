@@ -11,6 +11,8 @@ use snake::SnakePlugin;
 
 use crate::events::GameOver;
 
+const BLOCK_SIZE: f32 = 40.0;
+
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {

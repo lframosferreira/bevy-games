@@ -5,8 +5,6 @@ mod systems;
 
 use self::systems::*;
 
-pub const FRUIT_SIZE: f32 = 40.0;
-
 pub struct FruitPlugin;
 
 impl Plugin for FruitPlugin {
