@@ -9,6 +9,14 @@ pub fn spawn_fruit(
     window_query: Query<&Window, With<PrimaryWindow>>,
     asset_server: Res<AssetServer>,
 ) {
+    _spawn_fruit(window_query, commands, asset_server);
+}
+
+pub fn _spawn_fruit(
+    window_query: Query<'_, '_, &Window, With<PrimaryWindow>>,
+    mut commands: Commands<'_, '_>,
+    asset_server: Res<'_, AssetServer>,
+) {
     let window: &Window = window_query.get_single().unwrap();
     let mut rng = rand::thread_rng();
     let random_x_index: f32 = rng.gen_range(0..((window.width() / BLOCK_SIZE) as u32)) as f32;
