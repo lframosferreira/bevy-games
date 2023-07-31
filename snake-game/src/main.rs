@@ -9,7 +9,14 @@ use systems::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                resolution: (1000.0, 600.0).into(),
+                title: "Bevy Snake".to_string(),
+                ..default()
+            }),
+            ..default()
+        }))
         .add_state::<AppState>()
         .add_plugins(GamePlugin)
         .add_systems(Startup, spawn_camera)
