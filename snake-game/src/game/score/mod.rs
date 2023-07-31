@@ -1,11 +1,10 @@
-use bevy::prelude::*;
-
 pub mod resources;
 mod systems;
 
-use self::resources::*;
-use self::systems::*;
 use crate::AppState;
+use bevy::prelude::*;
+use resources::*;
+use systems::*;
 
 pub struct ScorePlugin;
 

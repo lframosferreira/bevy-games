@@ -1,17 +1,19 @@
-use bevy::prelude::*;
-
 pub mod events;
 mod game;
 mod systems;
 
-use game::GamePlugin;
+use bevy::prelude::*;
+use game::{
+    snake::{HEAD_X, HEAD_Y},
+    GamePlugin,
+};
 use systems::*;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
-                resolution: (1000.0, 600.0).into(),
+                resolution: (HEAD_X * 2., HEAD_Y * 2.).into(),
                 title: "Bevy Snake".to_string(),
                 ..default()
             }),
