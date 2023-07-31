@@ -1,12 +1,9 @@
+use crate::game::fruit::systems::_spawn_fruit;
+use crate::game::score::resources::Score;
+use crate::game::{fruit::components::Fruit, BLOCK_SIZE};
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb::collide;
 use bevy::window::PrimaryWindow;
-use rand::Rng;
-
-use crate::game::fruit::systems::_spawn_fruit;
-use crate::game::fruit::FRUIT_SIZE;
-use crate::game::score::resources::Score;
-use crate::game::{fruit::components::Fruit, BLOCK_SIZE};
 
 use super::components::{Direction, Snake};
 
