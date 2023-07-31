@@ -1,16 +1,11 @@
+use crate::game::fruit::systems::_spawn_fruit;
+use crate::game::score::resources::Score;
+use crate::game::{fruit::components::Fruit, BLOCK_SIZE};
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb::collide;
 use bevy::window::PrimaryWindow;
-use rand::Rng;
 
-use crate::game::fruit::components::Fruit;
-use crate::game::fruit::FRUIT_SIZE;
-use crate::game::score::resources::Score;
-
-use super::{
-    components::{Direction, Snake},
-    SNAKE_SPEED,
-};
+use super::components::{Direction, Snake};
 
 pub fn spawn_snake(
     mut commands: Commands,
@@ -50,35 +45,35 @@ pub fn update_direction(
     }
 }
 
-/// The sprite is animated by changing its translation depending on the time that has passed since the last frame.
-/// See <https://bevyengine.org/examples/2D%20Rendering/move-sprite/>
 pub fn sprite_movement(
     mut sprite_position: Query<(&mut Direction, &mut Transform), With<Snake>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
     let window: &Window = window_query.get_single().unwrap();
 
-    for (mut logo, mut transform) in &mut sprite_position {
+    for (logo, mut transform) in &mut sprite_position {
+        let translation = &mut transform.translation;
         match *logo {
-            Direction::Up => transform.translation.y += SNAKE_SPEED,
-            Direction::Down => transform.translation.y -= SNAKE_SPEED,
-            Direction::Left => transform.translation.x -= SNAKE_SPEED,
-            Direction::Right => transform.translation.x += SNAKE_SPEED,
-        }
-
-        // TODO extrair isso aqui em uma função
-        // TODO levar em conta o comprimento das partes para fazer a colisão com a parede
-        if transform.translation.x > window.width() {
-            *logo = Direction::Left
-        } else if transform.translation.x < 0. {
-            *logo = Direction::Right
-        }
-
-        // TODO levar em conta o comprimento das partes para fazer a colisão com a parede
-        if transform.translation.y > window.height() {
-            *logo = Direction::Down;
-        } else if transform.translation.y < 0. {
-            *logo = Direction::Up;
+            Direction::Up => {
+                if translation.y + BLOCK_SIZE < window.height() {
+                    translation.y += BLOCK_SIZE
+                }
+            }
+            Direction::Down => {
+                if translation.y - BLOCK_SIZE > 0. {
+                    translation.y -= BLOCK_SIZE
+                }
+            }
+            Direction::Left => {
+                if translation.x - BLOCK_SIZE > 0. {
+                    translation.x -= BLOCK_SIZE
+                }
+            }
+            Direction::Right => {
+                if translation.x + BLOCK_SIZE < window.width() {
+                    translation.x += BLOCK_SIZE
+                }
+            }
         }
     }
 }
@@ -106,25 +101,7 @@ pub fn handle_eat_fruit(
                 // possivelmente isso aqui pode virar uma funcao
                 // spawn de nova frutinha
                 // cor aleatoria / fruta aleatoria
-                let window: &Window = window_query.get_single().unwrap();
-                let mut rng = rand::thread_rng();
-                let random_x_index: f32 =
-                    rng.gen_range(0..((window.width() / FRUIT_SIZE) as u32)) as f32;
-                let fruit_x_pos: f32 = random_x_index * FRUIT_SIZE + FRUIT_SIZE / 2.0;
-                let random_y_index: f32 =
-                    rng.gen_range(0..((window.height() / FRUIT_SIZE) as u32)) as f32;
-                let fruit_y_pos: f32 = random_y_index * FRUIT_SIZE + FRUIT_SIZE / 2.0;
-                commands.spawn((
-                    SpriteBundle {
-                        transform: Transform::from_xyz(fruit_x_pos, fruit_y_pos, 0.0),
-                        texture: asset_server.load("sprites/fruit.png"),
-                        ..default()
-                    },
-                    Fruit {
-                        x_pos: fruit_x_pos,
-                        y_pos: fruit_y_pos,
-                    },
-                ));
+                _spawn_fruit(window_query, commands, asset_server);
             }
         }
     }

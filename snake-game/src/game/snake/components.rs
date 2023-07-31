@@ -1,4 +1,5 @@
-use super::SNAKE_BODY_PART_SIZE;
+use crate::game::BLOCK_SIZE;
+
 use bevy::prelude::*;
 
 pub struct SnakeBodyPart {
@@ -7,9 +8,7 @@ pub struct SnakeBodyPart {
 
 impl Default for SnakeBodyPart {
     fn default() -> Self {
-        SnakeBodyPart {
-            size: SNAKE_BODY_PART_SIZE,
-        }
+        SnakeBodyPart { size: BLOCK_SIZE }
     }
 }
 
