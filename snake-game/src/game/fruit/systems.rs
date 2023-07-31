@@ -5,7 +5,7 @@ use bevy::window::PrimaryWindow;
 use rand::Rng;
 
 pub fn spawn_fruit(
-    mut commands: Commands,
+    commands: Commands,
     window_query: Query<&Window, With<PrimaryWindow>>,
     asset_server: Res<AssetServer>,
 ) {
