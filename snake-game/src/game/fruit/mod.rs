@@ -1,9 +1,8 @@
 use bevy::prelude::*;
+use systems::*;
 
 pub mod components;
 pub mod systems;
-
-use self::systems::*;
 
 pub struct FruitPlugin;
 

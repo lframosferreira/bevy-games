@@ -1,9 +1,8 @@
+use crate::events::*;
+use crate::AppState;
 use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-
-use crate::events::*;
-use crate::AppState;
 
 pub fn spawn_camera(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>) {
     let window: &Window = window_query.get_single().unwrap();

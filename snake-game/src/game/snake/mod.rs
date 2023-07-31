@@ -1,12 +1,13 @@
-use std::time::Duration;
-
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
+use std::time::Duration;
+use systems::*;
 
 pub mod components;
 mod systems;
 
-use self::systems::*;
+pub const HEAD_X: f32 = 500.0;
+pub const HEAD_Y: f32 = 300.0;
 
 pub struct SnakePlugin;
 
