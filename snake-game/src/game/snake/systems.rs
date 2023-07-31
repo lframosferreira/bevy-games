@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb::collide;
 use bevy::window::PrimaryWindow;
-use rand::prelude::*;
+use rand::Rng;
 
 use crate::game::fruit::components::Fruit;
 use crate::game::score::resources::Score;
@@ -21,7 +21,7 @@ pub fn spawn_snake(
     commands.spawn((
         SpriteBundle {
             texture: asset_server.load("sprites/body.png"),
-            transform: Transform::from_xyz(window.width() / 2., window.height() / 2., 0.),
+            transform: Transform::from_xyz(window.width() / 2., window.height() / 2.0, 0.),
             ..default()
         },
         Snake::default(),
@@ -53,17 +53,17 @@ pub fn update_direction(
 /// See <https://bevyengine.org/examples/2D%20Rendering/move-sprite/>
 pub fn sprite_movement(
     time: Res<Time>,
-    mut sprite_position: Query<(&mut Direction, &mut Transform)>,
+    mut sprite_position: Query<(&mut Direction, &mut Transform), With<Snake>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
     let window: &Window = window_query.get_single().unwrap();
 
     for (mut logo, mut transform) in &mut sprite_position {
         match *logo {
-            Direction::Up => transform.translation.y += SNAKE_SPEED * time.delta_seconds(),
-            Direction::Down => transform.translation.y -= SNAKE_SPEED * time.delta_seconds(),
-            Direction::Left => transform.translation.x -= SNAKE_SPEED * time.delta_seconds(),
-            Direction::Right => transform.translation.x += SNAKE_SPEED * time.delta_seconds(),
+            Direction::Up => transform.translation.y += SNAKE_SPEED,
+            Direction::Down => transform.translation.y -= SNAKE_SPEED,
+            Direction::Left => transform.translation.x -= SNAKE_SPEED,
+            Direction::Right => transform.translation.x += SNAKE_SPEED,
         }
 
         // TODO extrair isso aqui em uma função
@@ -102,10 +102,15 @@ pub fn handle_eat_fruit(
             .is_some()
             {
                 commands.entity(fruit_entity).despawn();
+
                 // possivelmente isso aqui pode virar uma funcao
                 let window: &Window = window_query.get_single().unwrap();
-                let fruit_x_pos: f32 = random::<f32>() * window.width();
-                let fruit_y_pos: f32 = random::<f32>() * window.height();
+                let mut rng = rand::thread_rng();
+                let random_x_index: f32 = rng.gen_range(0..((window.width() / 40.0) as u32)) as f32;
+                let fruit_x_pos: f32 = random_x_index * 40.0 + 20.0;
+                let random_y_index: f32 =
+                    rng.gen_range(0..((window.height() / 40.0) as u32)) as f32;
+                let fruit_y_pos: f32 = random_y_index * 40.0 + 20.0;
                 commands.spawn((
                     SpriteBundle {
                         transform: Transform::from_xyz(fruit_x_pos, fruit_y_pos, 0.0),
