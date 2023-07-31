@@ -45,8 +45,6 @@ pub fn update_direction(
     }
 }
 
-/// The sprite is animated by changing its translation depending on the time that has passed since the last frame.
-/// See <https://bevyengine.org/examples/2D%20Rendering/move-sprite/>
 pub fn sprite_movement(
     mut sprite_position: Query<(&mut Direction, &mut Transform), With<Snake>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
