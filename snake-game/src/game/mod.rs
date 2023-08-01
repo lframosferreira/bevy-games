@@ -9,7 +9,7 @@ use fruit::FruitPlugin;
 use score::ScorePlugin;
 use snake::SnakePlugin;
 
-const BLOCK_SIZE: f32 = 40.0;
+pub const BLOCK_SIZE: f32 = 40.0;
 
 pub struct GamePlugin;
 
