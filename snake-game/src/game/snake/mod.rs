@@ -3,6 +3,8 @@ use bevy::time::common_conditions::on_timer;
 use std::time::Duration;
 use systems::*;
 
+use crate::AppState;
+
 pub mod components;
 mod systems;
 
@@ -14,11 +16,13 @@ pub struct SnakePlugin;
 impl Plugin for SnakePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_snake)
-            .add_systems(Update, update_direction)
+            .add_systems(Update, update_direction.run_if(in_state(AppState::InGame)))
             .add_systems(
                 Update,
-                sprite_movement.run_if(on_timer(Duration::from_millis(100))),
+                sprite_movement
+                    .run_if(in_state(AppState::InGame))
+                    .run_if(on_timer(Duration::from_millis(100))),
             )
-            .add_systems(Update, handle_eat_fruit);
+            .add_systems(Update, handle_eat_fruit.run_if(in_state(AppState::InGame)));
     }
 }
