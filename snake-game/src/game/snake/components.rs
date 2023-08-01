@@ -1,31 +1,24 @@
-use super::{HEAD_X, HEAD_Y};
-use crate::game::BLOCK_SIZE;
 use bevy::prelude::*;
 
-pub struct SnakeBodyPart {
-    pub size: f32,
-}
-
-impl Default for SnakeBodyPart {
-    fn default() -> Self {
-        SnakeBodyPart { size: BLOCK_SIZE }
-    }
-}
+#[derive(Component)]
+pub struct SnakeTail;
 
 #[derive(Component)]
-pub struct Snake {
-    pub body: Vec<SnakeBodyPart>,
-    pub head_x_pos: f32,
-    pub head_y_pos: f32,
+pub struct SnakeHead;
+
+#[derive(Component, Default)]
+pub struct SnakeBody {
+    pub count: u32,
 }
 
-impl Default for Snake {
+#[derive(Resource)]
+pub struct SnakeCounter {
+    pub count: u32,
+}
+impl Default for SnakeCounter {
     fn default() -> Self {
-        Snake {
-            head_x_pos: HEAD_X,
-            head_y_pos: HEAD_Y,
-            body: vec![SnakeBodyPart::default()],
-        }
+        // Número inicial de peças no CORPO (excluindo cabeça)
+        Self { count: 2 }
     }
 }
 
