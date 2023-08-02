@@ -80,7 +80,7 @@ pub fn update_direction(
 
 pub fn move_snake(
     mut commands: Commands,
-    body_positions: Query<(Entity, &SnakeBody), With<SnakeBody>>,
+    body_entities: Query<(Entity, &SnakeBody, &Transform), Without<SnakeHead>>,
     mut head_position: Query<(&mut Direction, &mut Transform), With<SnakeHead>>,
     mut game_over_event_writer: EventWriter<GameOver>,
     mut counter: ResMut<SnakeCounter>,
@@ -90,7 +90,7 @@ pub fn move_snake(
     let window: &Window = window_query.get_single().unwrap();
     // TODO: extrair em várias funções
 
-    for (direction, mut transform) in &mut head_position {
+    for (direction, mut transform) in head_position.iter_mut() {
         let translation = &mut transform.translation;
 
         // Spawno um novo body para ocupar a posição antiga da cabeça
@@ -143,7 +143,20 @@ pub fn move_snake(
             }
         }
 
-        // TODO checar colisão com corpo
+        // Checando colisão ocm o corpo
+        for (_, _, transform) in body_entities.iter() {
+            let body_translation = transform.translation;
+            if collide(
+                *translation,
+                Vec2::new(40., 40.),
+                body_translation,
+                Vec2::new(40., 40.),
+            )
+            .is_some()
+            {
+                collided = true;
+            }
+        }
 
         if collided {
             // HACK Aqui nós estamos primeiro ativando o estado de GameOver e depois mandando o
@@ -163,7 +176,7 @@ pub fn move_snake(
         if !score.is_changed() || score.value == 0 {
             let mut min = u32::MAX;
             let mut tail: Option<Entity> = None;
-            for (entity, body) in body_positions.iter() {
+            for (entity, body, _) in body_entities.iter() {
                 if body.count < min {
                     min = body.count;
                     tail = Some(entity);
