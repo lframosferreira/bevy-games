@@ -20,7 +20,7 @@ impl Plugin for SnakePlugin {
             .add_systems(Update, update_direction.run_if(in_state(AppState::InGame)))
             .add_systems(
                 Update,
-                sprite_movement
+                move_snake
                     .run_if(in_state(AppState::InGame))
                     .run_if(on_timer(Duration::from_millis(100))),
             )

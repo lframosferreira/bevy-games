@@ -18,7 +18,7 @@ pub struct SnakeCounter {
 impl Default for SnakeCounter {
     fn default() -> Self {
         // Número inicial de peças no CORPO (excluindo cabeça)
-        Self { count: 2 }
+        Self { count: 1 }
     }
 }
 
