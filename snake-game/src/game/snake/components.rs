@@ -22,7 +22,7 @@ impl Default for SnakeCounter {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, PartialEq)]
 pub enum Direction {
     Up,
     Down,

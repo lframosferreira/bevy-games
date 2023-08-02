@@ -63,16 +63,16 @@ pub fn update_direction(
     mut snake_head_query: Query<&mut Direction, With<SnakeHead>>,
 ) {
     if let Ok(mut dir) = snake_head_query.get_single_mut() {
-        if keyboard_input.pressed(KeyCode::H) {
+        if keyboard_input.pressed(KeyCode::H) && *dir != Direction::Right {
             *dir = Direction::Left;
         }
-        if keyboard_input.pressed(KeyCode::L) {
+        if keyboard_input.pressed(KeyCode::L) && *dir != Direction::Left {
             *dir = Direction::Right;
         }
-        if keyboard_input.pressed(KeyCode::K) {
+        if keyboard_input.pressed(KeyCode::K) && *dir != Direction::Down {
             *dir = Direction::Up;
         }
-        if keyboard_input.pressed(KeyCode::J) {
+        if keyboard_input.pressed(KeyCode::J) && *dir != Direction::Up {
             *dir = Direction::Down;
         }
     }
