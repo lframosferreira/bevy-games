@@ -1,5 +1,6 @@
+use crate::menu::components::QuitButton;
 use crate::menu::layout::spawn_button;
-use crate::menu::pause::components::{PauseMenu, QuitButton, ResumeButton};
+use crate::menu::pause::components::{PauseMenu, ResumeButton};
 use crate::menu::styles::{get_pause_menu_style, get_text_bundle, get_title, get_title_text_style};
 use bevy::prelude::*;
 
