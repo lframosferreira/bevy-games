@@ -43,6 +43,21 @@ pub fn spawn_snake(mut commands: Commands, window_query: Query<&Window, With<Pri
     ));
 }
 
+pub fn respawn_snake(
+    mut commands: Commands,
+    snake_head_query: Query<Entity, With<SnakeHead>>,
+    snake_body_query: Query<Entity, With<SnakeBody>>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+) {
+    if let Ok(entity) = snake_head_query.get_single() {
+        commands.entity(entity).despawn();
+    }
+    for entity in snake_body_query.iter() {
+        commands.entity(entity).despawn();
+    }
+    spawn_snake(commands, window_query);
+}
+
 pub fn update_direction(
     keyboard_input: Res<Input<KeyCode>>,
     mut snake_head_query: Query<&mut Direction, With<SnakeHead>>,
@@ -74,22 +89,6 @@ pub fn move_snake(
 ) {
     let window: &Window = window_query.get_single().unwrap();
     // TODO: extrair em várias funções
-
-    // Procuramos a última posição do corpo e removemos
-    // Somente se a cobra não comeu
-    if !score.is_changed() || score.value == 0 {
-        let mut min = u32::MAX;
-        let mut tail: Option<Entity> = None;
-        for (entity, body) in body_positions.iter() {
-            if body.count < min {
-                min = body.count;
-                tail = Some(entity);
-            }
-        }
-        if let Some(tail) = tail {
-            commands.entity(tail).despawn();
-        }
-    }
 
     for (direction, mut transform) in &mut head_position {
         let translation = &mut transform.translation;
@@ -154,7 +153,25 @@ pub fn move_snake(
             //
             // Provavelmente tem um jeito melhor de fazer isso, em relação à gerência de estado.
             commands.insert_resource(NextState(Some(AppState::GameOver)));
-            game_over_event_writer.send(GameOver { score: score.value })
+            game_over_event_writer.send(GameOver { score: score.value });
+            // Early return para não comer a cauda
+            return;
+        }
+
+        // Procuramos a última posição do corpo e removemos
+        // Somente se a cobra não comeu
+        if !score.is_changed() || score.value == 0 {
+            let mut min = u32::MAX;
+            let mut tail: Option<Entity> = None;
+            for (entity, body) in body_positions.iter() {
+                if body.count < min {
+                    min = body.count;
+                    tail = Some(entity);
+                }
+            }
+            if let Some(tail) = tail {
+                commands.entity(tail).despawn();
+            }
         }
     }
 }

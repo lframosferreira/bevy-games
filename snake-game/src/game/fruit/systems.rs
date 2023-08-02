@@ -30,3 +30,14 @@ pub fn spawn_fruit(commands: Commands, window_query: Query<&Window, With<Primary
         ));
     };
 }
+
+pub fn respawn_fruit(
+    mut commands: Commands,
+    fruit_query: Query<Entity, With<Fruit>>,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+) {
+    if let Ok(entity) = fruit_query.get_single() {
+        commands.entity(entity).despawn();
+    }
+    spawn_fruit(commands, window_query);
+}
