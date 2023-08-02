@@ -1,4 +1,5 @@
-use super::components::{Direction, SnakeBody, SnakeCounter, SnakeHead};
+use super::components::{Direction, SnakeBody, SnakeHead};
+use super::resources::SnakeCounter;
 use crate::events::GameOver;
 use crate::game::fruit::systems::spawn_fruit;
 use crate::game::score::resources::Score;

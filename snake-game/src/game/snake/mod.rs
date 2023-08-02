@@ -1,12 +1,13 @@
+mod components;
+mod resources;
+mod systems;
+
 use crate::AppState;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
-use components::SnakeCounter;
+use resources::SnakeCounter;
 use std::time::Duration;
 use systems::*;
-
-pub mod components;
-mod systems;
 
 pub struct SnakePlugin;
 

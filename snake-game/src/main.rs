@@ -1,4 +1,4 @@
-pub mod events;
+mod events;
 mod game;
 mod menu;
 mod systems;

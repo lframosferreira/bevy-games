@@ -1,10 +1,9 @@
-use bevy::prelude::*;
-use systems::*;
-
-use crate::AppState;
-
 pub mod components;
 pub mod systems;
+
+use crate::AppState;
+use bevy::prelude::*;
+use systems::*;
 
 pub struct FruitPlugin;
 

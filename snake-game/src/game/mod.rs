@@ -1,6 +1,6 @@
 mod fruit;
 mod score;
-pub mod snake;
+mod snake;
 mod systems;
 
 use crate::events::GameOver;

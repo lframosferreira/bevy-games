@@ -1,4 +1,4 @@
-pub mod components;
+mod components;
 mod systems;
 
 use crate::AppState;

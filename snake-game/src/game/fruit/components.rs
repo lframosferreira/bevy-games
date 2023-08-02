@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::prelude::Component;
 
 #[derive(Component, Default)]
 pub struct Fruit {}
