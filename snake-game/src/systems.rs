@@ -20,7 +20,7 @@ pub fn pause_game(
     app_state: Res<State<AppState>>,
     mut next_app_state: ResMut<NextState<AppState>>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::Escape) && app_state.get() != &AppState::Pause {
+    if keyboard_input.just_pressed(KeyCode::Escape) && app_state.get() == &AppState::InGame {
         next_app_state.set(AppState::Pause);
     }
 }

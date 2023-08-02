@@ -1,5 +1,6 @@
 mod components;
 mod game_over;
+mod layout;
 mod pause;
 mod styles;
 

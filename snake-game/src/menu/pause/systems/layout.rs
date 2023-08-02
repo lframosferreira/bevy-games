@@ -1,8 +1,6 @@
+use crate::menu::layout::spawn_button;
 use crate::menu::pause::components::{PauseMenu, QuitButton, ResumeButton};
-use crate::menu::styles::{
-    get_button_text_style, get_normal_button, get_pause_menu_style, get_text_bundle, get_title,
-    get_title_text_style,
-};
+use crate::menu::styles::{get_pause_menu_style, get_text_bundle, get_title, get_title_text_style};
 use bevy::prelude::*;
 
 pub fn spawn_pause_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -28,20 +26,8 @@ pub fn build_pause_menu(commands: &mut Commands, asset_server: &Res<AssetServer>
             parent.spawn(get_title()).with_children(|parent| {
                 parent.spawn(get_text_bundle("SNAKE", asset_server, get_title_text_style));
             });
-            parent
-                .spawn((get_normal_button(), ResumeButton {}))
-                .with_children(|parent| {
-                    parent.spawn(get_text_bundle(
-                        "Resume",
-                        asset_server,
-                        get_button_text_style,
-                    ));
-                });
-            parent
-                .spawn((get_normal_button(), QuitButton {}))
-                .with_children(|parent| {
-                    parent.spawn(get_text_bundle("Quit", asset_server, get_button_text_style));
-                });
+            spawn_button(parent, asset_server, "Resume", ResumeButton {});
+            spawn_button(parent, asset_server, "Quit", QuitButton {});
         })
         .id()
 }
