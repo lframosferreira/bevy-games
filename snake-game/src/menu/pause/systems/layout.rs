@@ -1,9 +1,7 @@
-use crate::menu::pause::{
-    components::{PauseMenu, QuitButton, ResumeButton},
-    styles::{
-        get_button_text_style, get_normal_button, get_pause_menu_style, get_text_bundle, get_title,
-        get_title_text_style,
-    },
+use crate::menu::pause::components::{PauseMenu, QuitButton, ResumeButton};
+use crate::menu::styles::{
+    get_button_text_style, get_normal_button, get_pause_menu_style, get_text_bundle, get_title,
+    get_title_text_style,
 };
 use bevy::prelude::*;
 

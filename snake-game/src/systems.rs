@@ -1,13 +1,11 @@
-use crate::events::*;
-use crate::game::snake::{HEAD_X, HEAD_Y};
 use crate::game::BLOCK_SIZE;
 use crate::AppState;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_prototype_debug_lines::*;
 
-pub const WINDOW_X: f32 = HEAD_X * 2.;
-pub const WINDOW_Y: f32 = HEAD_Y * 2.;
+pub const WINDOW_X: f32 = 1000.0;
+pub const WINDOW_Y: f32 = 600.0;
 
 pub fn spawn_camera(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>) {
     let window: &Window = window_query.get_single().unwrap();
@@ -15,13 +13,6 @@ pub fn spawn_camera(mut commands: Commands, window_query: Query<&Window, With<Pr
         transform: Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, 1.0),
         ..default()
     });
-}
-
-pub fn handle_game_over(mut commands: Commands, mut game_over_event_reader: EventReader<GameOver>) {
-    for event in game_over_event_reader.iter() {
-        println!("Final score: {}", event.score);
-        commands.insert_resource(NextState(Some(AppState::GameOver)));
-    }
 }
 
 pub fn pause_game(

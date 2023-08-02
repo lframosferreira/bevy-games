@@ -1,7 +1,9 @@
 use super::components::{Direction, SnakeBody, SnakeCounter, SnakeHead};
+use crate::events::GameOver;
 use crate::game::fruit::systems::spawn_fruit;
 use crate::game::score::resources::Score;
 use crate::game::{fruit::components::Fruit, BLOCK_SIZE};
+use crate::AppState;
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb::collide;
 use bevy::window::PrimaryWindow;
@@ -65,11 +67,13 @@ pub fn move_snake(
     mut commands: Commands,
     body_positions: Query<(Entity, &SnakeBody), With<SnakeBody>>,
     mut head_position: Query<(&mut Direction, &mut Transform), With<SnakeHead>>,
+    mut game_over_event_writer: EventWriter<GameOver>,
     mut counter: ResMut<SnakeCounter>,
     score: Res<Score>,
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
     let window: &Window = window_query.get_single().unwrap();
+    // TODO: extrair em várias funções
 
     // Procuramos a última posição do corpo e removemos
     // Somente se a cobra não comeu
@@ -108,27 +112,49 @@ pub fn move_snake(
         counter.count += 1;
 
         // Movo a cabeça
+        let mut collided = false;
         match *direction {
             Direction::Up => {
                 if translation.y + BLOCK_SIZE < window.height() {
                     translation.y += BLOCK_SIZE
+                } else {
+                    collided = true;
                 }
             }
             Direction::Down => {
                 if translation.y - BLOCK_SIZE > 0. {
                     translation.y -= BLOCK_SIZE
+                } else {
+                    collided = true;
                 }
             }
             Direction::Left => {
                 if translation.x - BLOCK_SIZE > 0. {
                     translation.x -= BLOCK_SIZE
+                } else {
+                    collided = true;
                 }
             }
             Direction::Right => {
                 if translation.x + BLOCK_SIZE < window.width() {
                     translation.x += BLOCK_SIZE
+                } else {
+                    collided = true;
                 }
             }
+        }
+
+        // TODO checar colisão com corpo
+
+        if collided {
+            // HACK Aqui nós estamos primeiro ativando o estado de GameOver e depois mandando o
+            // valor final do jogo. Isso é necessário pois o menu de GameOver é inicializado no
+            // estado GameOver. Ou seja, se a gente mandar o valor final antes de ativar o estado
+            // de GameOver, o menu vai achar que não há valor final.
+            //
+            // Provavelmente tem um jeito melhor de fazer isso, em relação à gerência de estado.
+            commands.insert_resource(NextState(Some(AppState::GameOver)));
+            game_over_event_writer.send(GameOver { score: score.value })
         }
     }
 }

@@ -1,10 +1,8 @@
 use bevy::{app::AppExit, prelude::*};
 
+use crate::menu::styles::{HOVERED_BUTTON_COLOR, NORMAL_BUTTON_COLOR, PRESSED_BUTTON_COLOR};
 use crate::{
-    menu::pause::{
-        components::{QuitButton, ResumeButton},
-        styles::{HOVERED_BUTTON_COLOR, NORMAL_BUTTON_COLOR, PRESSED_BUTTON_COLOR},
-    },
+    menu::pause::components::{QuitButton, ResumeButton},
     AppState,
 };
 

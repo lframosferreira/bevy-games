@@ -1,13 +1,10 @@
 pub mod components;
-mod styles;
 mod systems;
 
 use crate::AppState;
 use bevy::prelude::*;
-use systems::{
-    interactions::{interact_with_quit_button, interact_with_resume_button},
-    layout::{despawn_pause_menu, spawn_pause_menu},
-};
+use systems::interactions::{interact_with_quit_button, interact_with_resume_button};
+use systems::layout::{despawn_pause_menu, spawn_pause_menu};
 
 pub struct PauseMenuPlugin;
 

@@ -8,9 +8,6 @@ use systems::*;
 pub mod components;
 mod systems;
 
-pub const HEAD_X: f32 = 500.0;
-pub const HEAD_Y: f32 = 300.0;
-
 pub struct SnakePlugin;
 
 impl Plugin for SnakePlugin {
