@@ -2,6 +2,7 @@ use super::components::{Direction, SnakeBody, SnakeCounter, SnakeHead};
 use crate::events::GameOver;
 use crate::game::fruit::systems::spawn_fruit;
 use crate::game::score::resources::Score;
+use crate::game::SIZE;
 use crate::game::{fruit::components::Fruit, BLOCK_SIZE};
 use crate::AppState;
 use bevy::prelude::*;
@@ -15,7 +16,7 @@ pub fn spawn_snake(mut commands: Commands, window_query: Query<&Window, With<Pri
         SpriteBundle {
             sprite: Sprite {
                 color: Color::rgb(0.25, 0.75, 0.25),
-                custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
+                custom_size: Some(SIZE),
                 ..default()
             },
             transform: Transform::from_xyz(window.width() / 2., window.height() / 2., 0.),
@@ -29,7 +30,7 @@ pub fn spawn_snake(mut commands: Commands, window_query: Query<&Window, With<Pri
         SpriteBundle {
             sprite: Sprite {
                 color: Color::rgb(0.25, 0.75, 0.25),
-                custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
+                custom_size: Some(SIZE),
                 ..default()
             },
             transform: Transform::from_xyz(
@@ -98,7 +99,7 @@ pub fn move_snake(
             SpriteBundle {
                 sprite: Sprite {
                     color: Color::rgb(0.25, 0.75, 0.25),
-                    custom_size: Some(Vec2::new(BLOCK_SIZE, BLOCK_SIZE)),
+                    custom_size: Some(SIZE),
                     ..default()
                 },
                 transform: Transform::from_xyz(translation.x, translation.y, 0.),
@@ -146,14 +147,7 @@ pub fn move_snake(
         // Checando colisão ocm o corpo
         for (_, _, transform) in body_entities.iter() {
             let body_translation = transform.translation;
-            if collide(
-                *translation,
-                Vec2::new(40., 40.),
-                body_translation,
-                Vec2::new(40., 40.),
-            )
-            .is_some()
-            {
+            if collide(*translation, SIZE, body_translation, SIZE).is_some() {
                 collided = true;
             }
         }
@@ -200,9 +194,9 @@ pub fn handle_eat_fruit(
         if let Ok((fruit_entity, fruit_transform)) = fruit_query.get_single() {
             if collide(
                 head_transform.translation,
-                Vec2::new(40.0, 40.0),
+                SIZE,
                 fruit_transform.translation,
-                Vec2::new(40.0, 40.0),
+                SIZE,
             )
             .is_some()
             {
