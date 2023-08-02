@@ -25,7 +25,7 @@ fn main() {
         .add_plugins(GamePlugin)
         .add_plugins(MenuPlugin)
         .add_systems(Startup, spawn_camera)
-        .add_systems(Update, (pause_game, resume_game))
+        .add_systems(Update, (pause_game, resume_game, death_sound_effect))
         .add_systems(Update, draw_grid)
         .run()
 }
