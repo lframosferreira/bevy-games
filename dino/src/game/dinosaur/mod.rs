@@ -7,11 +7,13 @@ mod systems;
 use self::resources::DinoVerticalMovement;
 use self::systems::*;
 
+use super::floor::FLOOR_HEIGHT;
+
 pub const DINO_WIDTH: f32 = 40.0;
 pub const DINO_HEIGHT: f32 = 80.0;
 pub const DINO_X_POS: f32 = 100.0;
-pub const DINO_INITIAL_Y_POS: f32 = 300.0;
-pub const GRAVITY: f32 = -10.0;
+pub const DINO_INITIAL_Y_POS: f32 = FLOOR_HEIGHT + DINO_HEIGHT / 2.0;
+pub const GRAVITY: f32 = -1.5;
 pub const DINO_INITIAL_VERTICAL_SPEED: f32 = 20.0;
 
 pub struct DinosaurPlugin;
