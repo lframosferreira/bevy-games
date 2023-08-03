@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::prelude::Component;
 
 #[derive(Component)]
 pub struct SnakeTail;
@@ -11,18 +11,7 @@ pub struct SnakeBody {
     pub count: u32,
 }
 
-#[derive(Resource)]
-pub struct SnakeCounter {
-    pub count: u32,
-}
-impl Default for SnakeCounter {
-    fn default() -> Self {
-        // Número inicial de peças no CORPO (excluindo cabeça)
-        Self { count: 2 }
-    }
-}
-
-#[derive(Component)]
+#[derive(Component, PartialEq)]
 pub enum Direction {
     Up,
     Down,

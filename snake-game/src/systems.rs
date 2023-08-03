@@ -1,13 +1,12 @@
-use crate::events::*;
-use crate::game::snake::{HEAD_X, HEAD_Y};
+use crate::events::GameOver;
 use crate::game::BLOCK_SIZE;
 use crate::AppState;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_prototype_debug_lines::*;
 
-pub const WINDOW_X: f32 = HEAD_X * 2.;
-pub const WINDOW_Y: f32 = HEAD_Y * 2.;
+pub const WINDOW_X: f32 = 1000.0;
+pub const WINDOW_Y: f32 = 600.0;
 
 pub fn spawn_camera(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>) {
     let window: &Window = window_query.get_single().unwrap();
@@ -17,19 +16,12 @@ pub fn spawn_camera(mut commands: Commands, window_query: Query<&Window, With<Pr
     });
 }
 
-pub fn handle_game_over(mut commands: Commands, mut game_over_event_reader: EventReader<GameOver>) {
-    for event in game_over_event_reader.iter() {
-        println!("Final score: {}", event.score);
-        commands.insert_resource(NextState(Some(AppState::GameOver)));
-    }
-}
-
 pub fn pause_game(
     keyboard_input: Res<Input<KeyCode>>,
     app_state: Res<State<AppState>>,
     mut next_app_state: ResMut<NextState<AppState>>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::Escape) && app_state.get() != &AppState::Pause {
+    if keyboard_input.just_pressed(KeyCode::Escape) && app_state.get() == &AppState::InGame {
         next_app_state.set(AppState::Pause);
     }
 }
@@ -58,5 +50,19 @@ pub fn draw_grid(mut lines: ResMut<DebugLines>) {
             Vec3::new(WINDOW_X, BLOCK_SIZE * i as f32, 0.),
             0.0,
         )
+    }
+}
+
+pub fn death_sound_effect(
+    mut game_over_event_reader: EventReader<GameOver>,
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
+) {
+    for _ in game_over_event_reader.iter() {
+        let sound_effect = asset_server.load("audio/lego-yoda-death-sound-effect.ogg");
+        commands.spawn(AudioBundle {
+            source: sound_effect,
+            ..default()
+        });
     }
 }

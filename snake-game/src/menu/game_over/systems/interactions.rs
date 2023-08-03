@@ -1,11 +1,11 @@
+use crate::menu::game_over::components::RestartButton;
 use crate::menu::styles::{HOVERED_BUTTON_COLOR, NORMAL_BUTTON_COLOR, PRESSED_BUTTON_COLOR};
-use crate::{menu::pause::components::ResumeButton, AppState};
+use crate::menu::WorldQuery;
+use crate::AppState;
 use bevy::prelude::*;
 
-type WorldQuery<'a> = (&'a Interaction, &'a mut BackgroundColor);
-
-pub fn interact_with_resume_button(
-    mut button_query: Query<WorldQuery, (Changed<Interaction>, With<ResumeButton>)>,
+pub fn interact_with_restart_button(
+    mut button_query: Query<WorldQuery, (Changed<Interaction>, With<RestartButton>)>,
     mut next_app_state: ResMut<NextState<AppState>>,
 ) {
     if let Ok((interaction, mut background_color)) = button_query.get_single_mut() {

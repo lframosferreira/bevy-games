@@ -1,7 +1,4 @@
-use bevy::prelude::*;
+use bevy::prelude::Component;
 
 #[derive(Component, Default)]
-pub struct Fruit {
-    pub x_pos: f32,
-    pub y_pos: f32,
-}
+pub struct Fruit {}
