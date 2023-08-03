@@ -1,4 +1,4 @@
-pub mod events;
+mod events;
 mod game;
 mod menu;
 mod systems;
@@ -25,7 +25,7 @@ fn main() {
         .add_plugins(GamePlugin)
         .add_plugins(MenuPlugin)
         .add_systems(Startup, spawn_camera)
-        .add_systems(Update, (pause_game, resume_game, handle_game_over))
+        .add_systems(Update, (pause_game, resume_game, death_sound_effect))
         .add_systems(Update, draw_grid)
         .run()
 }
