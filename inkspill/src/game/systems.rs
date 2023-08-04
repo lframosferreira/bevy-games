@@ -107,7 +107,25 @@ pub fn spawn_buttons(mut commands: Commands, asset_server: Res<AssetServer>) {
     }
 }
 
-// TODO check early game win
+pub fn check_win(
+    block_query: Query<&Block>,
+    heart_query: Query<&Heart>,
+    mut commands: Commands,
+    mut game_over_event_writer: EventWriter<EndGame>,
+) {
+    if let Some(head) = block_query.iter().nth(1) {
+        for block in block_query.iter() {
+            if block.0 != head.0 {
+                return;
+            }
+        }
+        commands.insert_resource(NextState(Some(AppState::GameOver)));
+        game_over_event_writer.send(EndGame {
+            score: MAX_LIVES - heart_query.iter().len(),
+        });
+    }
+}
+
 pub fn take_life(
     mut commands: Commands,
     changed_heart: Query<Entity, Changed<Sprite>>,

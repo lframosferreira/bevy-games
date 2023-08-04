@@ -23,7 +23,7 @@ impl Plugin for GamePlugin {
         )
         .add_systems(
             Update,
-            (update_color, take_life).run_if(in_state(AppState::InGame)),
+            (update_color, take_life, check_win).run_if(in_state(AppState::InGame)),
         );
     }
 }
