@@ -1,14 +1,10 @@
 use bevy::prelude::*;
-use bevy::sprite::collide_aabb::collide;
-use bevy::window::PrimaryWindow;
 
 use super::components::Dinosaur;
 use super::resources::DinoVerticalMovement;
 use super::{
     DINO_HEIGHT, DINO_INITIAL_VERTICAL_SPEED, DINO_INITIAL_Y_POS, DINO_WIDTH, DINO_X_POS, GRAVITY,
 };
-use crate::game::floor::components::Floor;
-use crate::game::floor::FLOOR_HEIGHT;
 
 pub fn spawn_dinosaur(mut commands: Commands) {
     commands.spawn((
@@ -24,7 +20,6 @@ pub fn spawn_dinosaur(mut commands: Commands) {
         Dinosaur {},
     ));
 }
-
 
 pub fn handle_jump(
     mut dinosaur_query: Query<&mut Transform, With<Dinosaur>>,
