@@ -1,14 +1,14 @@
 use super::components::{Direction, SnakeBody, SnakeHead};
 use super::resources::SnakeCounter;
-use crate::events::GameOver;
 use crate::game::fruit::systems::spawn_fruit;
 use crate::game::score::resources::Score;
 use crate::game::SIZE;
 use crate::game::{fruit::components::Fruit, BLOCK_SIZE};
-use crate::AppState;
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb::collide;
 use bevy::window::PrimaryWindow;
+use common::events::EndGame;
+use common::AppState;
 
 pub fn spawn_snake(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>) {
     let window: &Window = window_query.get_single().unwrap();
@@ -84,7 +84,7 @@ pub fn move_snake(
     mut commands: Commands,
     body_entities: Query<(Entity, &SnakeBody, &Transform), Without<SnakeHead>>,
     mut head_position: Query<(&mut Direction, &mut Transform), With<SnakeHead>>,
-    mut game_over_event_writer: EventWriter<GameOver>,
+    mut game_over_event_writer: EventWriter<EndGame>,
     mut counter: ResMut<SnakeCounter>,
     score: Res<Score>,
     window_query: Query<&Window, With<PrimaryWindow>>,
@@ -161,7 +161,7 @@ pub fn move_snake(
             //
             // Provavelmente tem um jeito melhor de fazer isso, em relação à gerência de estado.
             commands.insert_resource(NextState(Some(AppState::GameOver)));
-            game_over_event_writer.send(GameOver { score: score.value });
+            game_over_event_writer.send(EndGame { score: score.value });
             // Early return para não comer a cauda
             return;
         }

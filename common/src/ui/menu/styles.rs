@@ -33,15 +33,18 @@ pub fn get_normal_button() -> ButtonBundle {
     }
 }
 
-pub fn get_menu_style() -> Style {
-    Style {
-        width: Val::Percent(100.0),
-        height: Val::Percent(100.0),
-        flex_direction: FlexDirection::Column,
-        justify_content: JustifyContent::Center,
-        align_items: AlignItems::Center,
-        row_gap: Val::Px(8.0),
-        column_gap: Val::Px(8.0),
+pub fn get_node_bundle() -> NodeBundle {
+    NodeBundle {
+        style: Style {
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            flex_direction: FlexDirection::Column,
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            row_gap: Val::Px(8.0),
+            column_gap: Val::Px(8.0),
+            ..default()
+        },
         ..default()
     }
 }

@@ -3,9 +3,7 @@ mod systems;
 
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::*;
-use common::events::EndGame;
-use common::ui::menu::MenuPlugin;
-use common::{systems::spawn_camera, AppState};
+use common::CommonPlugin;
 use game::GamePlugin;
 use systems::{draw_grid, WINDOW_X, WINDOW_Y};
 
@@ -20,12 +18,9 @@ fn main() {
             }),
             ..default()
         }))
-        .add_state::<AppState>()
-        .add_event::<EndGame>()
         .add_plugins(DebugLinesPlugin::default())
-        .add_plugins(MenuPlugin)
+        .add_plugins(CommonPlugin)
         .add_plugins(GamePlugin)
-        .add_systems(Startup, spawn_camera)
         .add_systems(Update, draw_grid)
         .run()
 }

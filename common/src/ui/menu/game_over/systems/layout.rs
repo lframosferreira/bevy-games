@@ -1,8 +1,8 @@
 use crate::events::EndGame;
-use crate::ui::menu::components::QuitButton;
-use crate::ui::menu::game_over::components::{GameOverMenu, RestartButton};
+use crate::ui::menu::components::{QuitButton, ResumeButton};
+use crate::ui::menu::game_over::components::GameOverMenu;
 use crate::ui::menu::layout::spawn_button;
-use crate::ui::menu::styles::{get_menu_style, get_text_bundle, get_title, get_title_text_style};
+use crate::ui::menu::styles::{get_node_bundle, get_text_bundle, get_title, get_title_text_style};
 use bevy::prelude::*;
 
 pub fn spawn_game_over_menu(
@@ -32,13 +32,7 @@ fn build_game_over_menu(
         score = event.score;
     }
     commands
-        .spawn((
-            NodeBundle {
-                style: get_menu_style(),
-                ..default()
-            },
-            GameOverMenu {},
-        ))
+        .spawn((get_node_bundle(), GameOverMenu {}))
         .with_children(|parent| {
             parent.spawn(get_title()).with_children(|parent| {
                 parent.spawn(get_text_bundle(
@@ -47,7 +41,7 @@ fn build_game_over_menu(
                     get_title_text_style,
                 ));
             });
-            spawn_button(parent, asset_server, "Restart", RestartButton {});
+            spawn_button(parent, asset_server, "Restart", ResumeButton {});
             spawn_button(parent, asset_server, "Quit", QuitButton {});
         })
         .id()
