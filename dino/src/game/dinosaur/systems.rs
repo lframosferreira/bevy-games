@@ -46,6 +46,7 @@ pub fn handle_jump(
                 {
                     dino_vertical_movement.moving = false;
                     dino_vertical_movement.speed = DINO_INITIAL_VERTICAL_SPEED;
+                    dinosaur_transform.translation.y = DINO_INITIAL_Y_POS;
                 } else {
                     dinosaur_transform.translation.y += dino_vertical_movement.speed;
                     dino_vertical_movement.speed += GRAVITY;
