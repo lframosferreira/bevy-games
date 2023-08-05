@@ -1,20 +1,10 @@
-use crate::events::GameOver;
 use crate::game::BLOCK_SIZE;
-use crate::AppState;
 use bevy::prelude::*;
-use bevy::window::PrimaryWindow;
 use bevy_prototype_debug_lines::*;
+use common::{events::EndGame, AppState};
 
 pub const WINDOW_X: f32 = 1000.0;
 pub const WINDOW_Y: f32 = 600.0;
-
-pub fn spawn_camera(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>) {
-    let window: &Window = window_query.get_single().unwrap();
-    commands.spawn(Camera2dBundle {
-        transform: Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, 1.0),
-        ..default()
-    });
-}
 
 pub fn pause_game(
     keyboard_input: Res<Input<KeyCode>>,
@@ -54,7 +44,7 @@ pub fn draw_grid(mut lines: ResMut<DebugLines>) {
 }
 
 pub fn death_sound_effect(
-    mut game_over_event_reader: EventReader<GameOver>,
+    mut game_over_event_reader: EventReader<EndGame>,
     asset_server: Res<AssetServer>,
     mut commands: Commands,
 ) {

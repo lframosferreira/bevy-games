@@ -2,8 +2,8 @@ use super::styles::{get_button_text_style, get_normal_button, get_text_bundle};
 use bevy::prelude::*;
 
 pub fn spawn_button<T: Component>(
-    parent: &mut ChildBuilder<'_, '_, '_>,
-    asset_server: &Res<'_, AssetServer>,
+    parent: &mut ChildBuilder,
+    asset_server: &Res<AssetServer>,
     text: &str,
     button: T,
 ) {

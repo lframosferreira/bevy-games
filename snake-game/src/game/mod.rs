@@ -3,8 +3,8 @@ mod score;
 mod snake;
 mod systems;
 
-use crate::events::GameOver;
 use bevy::prelude::*;
+use common::events::EndGame;
 use fruit::FruitPlugin;
 use score::ScorePlugin;
 use snake::SnakePlugin;
@@ -16,7 +16,7 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<GameOver>()
+        app.add_event::<EndGame>()
             .add_plugins((SnakePlugin, FruitPlugin, ScorePlugin));
     }
 }
