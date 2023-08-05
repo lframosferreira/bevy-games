@@ -2,9 +2,9 @@ mod components;
 mod resources;
 mod systems;
 
-use crate::AppState;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
+use common::AppState;
 use resources::SnakeCounter;
 use std::time::Duration;
 use systems::*;
