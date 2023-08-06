@@ -11,6 +11,7 @@ use systems::*;
 
 fn main() {
     App::new()
+    .insert_resource(Msaa::default())
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 resolution: (WINDOW_X, WINDOW_Y).into(),
@@ -19,8 +20,8 @@ fn main() {
             }),
             ..default()
         }))
+        .add_plugins(DebugLinesPlugin::default())
         .add_plugins((GamePlugin, CommonPlugin))
-        .add_systems(Startup, spawn_camera)
-        .add_systems(Update, exit_game)
+        .add_systems(Update, (pause_game, resume_game, death_sound_effect))
         .run();
 }

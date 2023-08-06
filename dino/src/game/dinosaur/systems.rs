@@ -1,7 +1,11 @@
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb::collide;
 
+use common::events::EndGame;
+use common::AppState;
+
 use crate::game::obstacle::components::Obstacle;
+use crate::game::score::resources::Score;
 
 use super::components::Dinosaur;
 use super::resources::DinoVerticalMovement;
@@ -50,8 +54,11 @@ pub fn handle_jump(
 }
 
 pub fn handle_collision(
+    mut commands: Commands,
     dinosaur_query: Query<&Transform, With<Dinosaur>>,
     obstacle_query: Query<&Transform, With<Obstacle>>,
+    mut game_over_event_writer: EventWriter<EndGame>,
+    score: Res<Score>,
 ) {
     if let Ok(dinosaur_transform) = dinosaur_query.get_single() {
         for obstacle_transform in obstacle_query.iter() {
@@ -63,7 +70,10 @@ pub fn handle_collision(
             )
             .is_some()
             {
-                println!("oui");
+                commands.insert_resource(NextState(Some(AppState::GameOver)));
+                game_over_event_writer.send(EndGame {
+                    score: score.value as usize,
+                });
             }
         }
     }
