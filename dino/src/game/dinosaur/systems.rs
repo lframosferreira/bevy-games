@@ -44,7 +44,7 @@ pub fn handle_jump(
                 dino_vertical_movement.speed += GRAVITY;
             }
         } else {
-            if keyboard_input.pressed(KeyCode::Space) {
+            if keyboard_input.just_pressed(KeyCode::Space) {
                 dino_vertical_movement.moving = true;
                 dinosaur_transform.translation.y += dino_vertical_movement.speed;
                 dino_vertical_movement.speed += GRAVITY;
@@ -64,9 +64,9 @@ pub fn handle_collision(
         for obstacle_transform in obstacle_query.iter() {
             if collide(
                 dinosaur_transform.translation,
-                Vec2::new(DINO_WIDTH, DINO_HEIGHT),
+                Vec2::new(dinosaur_transform.scale.x, dinosaur_transform.scale.y),
                 obstacle_transform.translation,
-                Vec2::new(20.0, 20.0),
+                Vec2::new(obstacle_transform.scale.x, obstacle_transform.scale.y),
             )
             .is_some()
             {
@@ -74,7 +74,21 @@ pub fn handle_collision(
                 game_over_event_writer.send(EndGame {
                     score: score.value as usize,
                 });
+                return;
             }
+        }
+    }
+}
+
+pub fn dinosaur_down_movement(
+    mut dinosaur_query: Query<&mut Transform, With<Dinosaur>>,
+    keyboard_input: Res<Input<KeyCode>>,
+) {
+    if let Ok(mut dinosaur_transform) = dinosaur_query.get_single_mut() {
+        if keyboard_input.pressed(KeyCode::Down) {
+            dinosaur_transform.translation.y = DINO_INITIAL_Y_POS - DINO_HEIGHT / 2.0;
+        } else {
+            dinosaur_transform.translation.y = DINO_INITIAL_Y_POS;
         }
     }
 }

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-pub const OBSTACLE_SPEED: f32 = 300.0;
+pub const OBSTACLE_SPEED: f32 = 600.0;
 
 pub mod components;
 mod resources;
