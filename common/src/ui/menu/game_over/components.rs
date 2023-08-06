@@ -1,4 +1,4 @@
 use bevy::prelude::Component;
 
 #[derive(Component)]
-pub struct QuitButton;
+pub struct GameOverMenu;

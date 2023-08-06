@@ -21,32 +21,31 @@ pub fn get_text_bundle(
 
 pub fn get_normal_button() -> ButtonBundle {
     ButtonBundle {
-        style: get_button_style(),
+        style: Style {
+            width: Val::Px(200.0),
+            height: Val::Px(80.0),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            ..Style::DEFAULT
+        },
         background_color: NORMAL_BUTTON_COLOR.into(),
         ..default()
     }
 }
 
-pub fn get_pause_menu_style() -> Style {
-    Style {
-        width: Val::Percent(100.0),
-        height: Val::Percent(100.0),
-        flex_direction: FlexDirection::Column,
-        justify_content: JustifyContent::Center,
-        align_items: AlignItems::Center,
-        row_gap: Val::Px(8.0),
-        column_gap: Val::Px(8.0),
+pub fn get_node_bundle() -> NodeBundle {
+    NodeBundle {
+        style: Style {
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            flex_direction: FlexDirection::Column,
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            row_gap: Val::Px(8.0),
+            column_gap: Val::Px(8.0),
+            ..default()
+        },
         ..default()
-    }
-}
-
-pub fn get_button_style() -> Style {
-    Style {
-        width: Val::Px(200.0),
-        height: Val::Px(80.0),
-        justify_content: JustifyContent::Center,
-        align_items: AlignItems::Center,
-        ..Style::DEFAULT
     }
 }
 
