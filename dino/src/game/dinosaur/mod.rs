@@ -22,6 +22,6 @@ impl Plugin for DinosaurPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<DinoVerticalMovement>()
             .add_systems(Startup, spawn_dinosaur)
-            .add_systems(Update, handle_jump);
+            .add_systems(Update, (handle_jump, handle_collision));
     }
 }

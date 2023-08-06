@@ -1,4 +1,7 @@
 use bevy::prelude::*;
+use bevy::sprite::collide_aabb::collide;
+
+use crate::game::obstacle::components::Obstacle;
 
 use super::components::Dinosaur;
 use super::resources::DinoVerticalMovement;
@@ -41,6 +44,26 @@ pub fn handle_jump(
                 dino_vertical_movement.moving = true;
                 dinosaur_transform.translation.y += dino_vertical_movement.speed;
                 dino_vertical_movement.speed += GRAVITY;
+            }
+        }
+    }
+}
+
+pub fn handle_collision(
+    dinosaur_query: Query<&Transform, With<Dinosaur>>,
+    obstacle_query: Query<&Transform, With<Obstacle>>,
+) {
+    if let Ok(dinosaur_transform) = dinosaur_query.get_single() {
+        for obstacle_transform in obstacle_query.iter() {
+            if collide(
+                dinosaur_transform.translation,
+                Vec2::new(DINO_WIDTH, DINO_HEIGHT),
+                obstacle_transform.translation,
+                Vec2::new(20.0, 20.0),
+            )
+            .is_some()
+            {
+                println!("oui");
             }
         }
     }
