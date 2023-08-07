@@ -1,6 +1,6 @@
 [workspace]
 
-members = ["snake-game", "tetris", "inkspill", "common", "flappy"]
+members = ["snake-game", "tetris", "inkspill", "dino", "flappy", "common"]
 
 [profile.dev]
 opt-level = 1
