@@ -11,7 +11,7 @@ pub struct ScorePlugin;
 impl Plugin for ScorePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Score>()
-            .add_systems(OnEnter(AppState::InGame), insert_score)
-            .add_systems(OnExit(AppState::InGame), remove_score);
+            .add_systems(Startup, insert_score)
+            .add_systems(OnExit(AppState::GameOver), reset_score);
     }
 }

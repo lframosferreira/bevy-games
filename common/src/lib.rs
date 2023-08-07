@@ -4,7 +4,7 @@ pub mod ui;
 
 use bevy::prelude::*;
 use events::EndGame;
-use systems::spawn_camera;
+use systems::*;
 use ui::menu::MenuPlugin;
 
 #[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
@@ -22,6 +22,7 @@ impl Plugin for CommonPlugin {
         app.add_event::<EndGame>()
             .add_state::<AppState>()
             .add_systems(Startup, spawn_camera)
+            .add_systems(Update, (pause_game, resume_game))
             .add_plugins(MenuPlugin);
     }
 }
