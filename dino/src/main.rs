@@ -11,7 +11,8 @@ use systems::*;
 
 fn main() {
     App::new()
-    .insert_resource(Msaa::default())
+        .insert_resource(ClearColor(Color::rgb(1.0, 1.0, 1.0)))
+        .insert_resource(Msaa::default())
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 resolution: (WINDOW_X, WINDOW_Y).into(),

@@ -1,27 +1,20 @@
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb::collide;
 
+use crate::game::obstacle::components::Obstacle;
+use crate::game::score::resources::Score;
 use common::events::EndGame;
 use common::AppState;
 
-use crate::game::obstacle::components::Obstacle;
-use crate::game::score::resources::Score;
-
 use super::components::Dinosaur;
 use super::resources::DinoVerticalMovement;
-use super::{
-    DINO_HEIGHT, DINO_INITIAL_VERTICAL_SPEED, DINO_INITIAL_Y_POS, DINO_WIDTH, DINO_X_POS, GRAVITY,
-};
+use super::{DINO_HEIGHT, DINO_INITIAL_VERTICAL_SPEED, DINO_INITIAL_Y_POS, DINO_X_POS, GRAVITY};
 
-pub fn spawn_dinosaur(mut commands: Commands) {
+pub fn spawn_dinosaur(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         SpriteBundle {
-            sprite: Sprite {
-                color: Color::rgb(1., 0.2, 0.2),
-                custom_size: Some(Vec2::new(DINO_WIDTH, DINO_HEIGHT)),
-                ..default()
-            },
             transform: Transform::from_xyz(DINO_X_POS, DINO_INITIAL_Y_POS, 0.0),
+            texture: asset_server.load("sprites/dino/dino_1.png"),
             ..default()
         },
         Dinosaur {},
@@ -62,6 +55,7 @@ pub fn handle_collision(
 ) {
     if let Ok(dinosaur_transform) = dinosaur_query.get_single() {
         for obstacle_transform in obstacle_query.iter() {
+            println!("{}", obstacle_transform.translation.y);
             if collide(
                 dinosaur_transform.translation,
                 Vec2::new(dinosaur_transform.scale.x, dinosaur_transform.scale.y),
@@ -87,7 +81,7 @@ pub fn dinosaur_down_movement(
     if let Ok(mut dinosaur_transform) = dinosaur_query.get_single_mut() {
         if keyboard_input.pressed(KeyCode::Down) {
             dinosaur_transform.translation.y = DINO_INITIAL_Y_POS - DINO_HEIGHT / 2.0;
-        } else {
+        } else if keyboard_input.just_released(KeyCode::Down) {
             dinosaur_transform.translation.y = DINO_INITIAL_Y_POS;
         }
     }

@@ -19,6 +19,7 @@ impl Plugin for ObstaclePlugin {
                 tick_obstacle_spawn_timer,
                 spawn_obstacles_over_time,
                 obstacles_movement,
+                despawn_obstacles_out_of_screen,
             ),
         );
     }

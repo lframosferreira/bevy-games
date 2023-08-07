@@ -6,10 +6,10 @@ mod systems;
 
 use self::resources::DinoVerticalMovement;
 use self::systems::*;
+use common::AppState;
 
 use super::floor::FLOOR_HEIGHT;
 
-pub const DINO_WIDTH: f32 = 40.0;
 pub const DINO_HEIGHT: f32 = 80.0;
 pub const DINO_X_POS: f32 = 100.0;
 pub const DINO_INITIAL_Y_POS: f32 = FLOOR_HEIGHT + DINO_HEIGHT / 2.0;
@@ -24,7 +24,8 @@ impl Plugin for DinosaurPlugin {
             .add_systems(Startup, spawn_dinosaur)
             .add_systems(
                 Update,
-                (handle_jump, handle_collision, dinosaur_down_movement),
+                (handle_jump, handle_collision, dinosaur_down_movement)
+                    .run_if(in_state(AppState::InGame)),
             );
     }
 }
