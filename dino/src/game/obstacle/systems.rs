@@ -37,7 +37,7 @@ pub fn spawn_obstacles_over_time(
                 ..default()
             },
             ObstacleKind::Pterodactyl => SpriteBundle {
-                transform: Transform::from_xyz(window.width(), DINO_INITIAL_Y_POS + 50.0, 0.0),
+                transform: Transform::from_xyz(window.width(), DINO_INITIAL_Y_POS + 60.0, 0.0),
                 texture: asset_server.load("sprites/ptera/ptera_1.png"),
                 ..default()
             },
