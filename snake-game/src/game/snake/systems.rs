@@ -10,13 +10,15 @@ use bevy::window::PrimaryWindow;
 use common::events::EndGame;
 use common::AppState;
 
+const SNAKE_COLOR: Color = Color::LIME_GREEN;
+
 pub fn spawn_snake(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>) {
-    let window: &Window = window_query.get_single().unwrap();
+    let window = window_query.get_single().unwrap();
 
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
-                color: Color::rgb(0.25, 0.75, 0.25),
+                color: SNAKE_COLOR,
                 custom_size: Some(SIZE),
                 ..default()
             },
@@ -30,7 +32,7 @@ pub fn spawn_snake(mut commands: Commands, window_query: Query<&Window, With<Pri
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
-                color: Color::rgb(0.25, 0.75, 0.25),
+                color: SNAKE_COLOR,
                 custom_size: Some(SIZE),
                 ..default()
             },
@@ -89,7 +91,7 @@ pub fn move_snake(
     score: Res<Score>,
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
-    let window: &Window = window_query.get_single().unwrap();
+    let window = window_query.get_single().unwrap();
     // TODO: extrair em várias funções
 
     for (direction, mut transform) in head_position.iter_mut() {
@@ -99,7 +101,7 @@ pub fn move_snake(
         commands.spawn((
             SpriteBundle {
                 sprite: Sprite {
-                    color: Color::rgb(0.25, 0.75, 0.25),
+                    color: SNAKE_COLOR,
                     custom_size: Some(SIZE),
                     ..default()
                 },
@@ -145,7 +147,7 @@ pub fn move_snake(
             }
         }
 
-        // Checando colisão ocm o corpo
+        // Checando colisão com o corpo
         for (_, _, transform) in body_entities.iter() {
             let body_translation = transform.translation;
             if collide(*translation, SIZE, body_translation, SIZE).is_some() {

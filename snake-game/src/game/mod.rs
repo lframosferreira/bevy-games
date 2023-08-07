@@ -1,7 +1,6 @@
 mod fruit;
 mod score;
 mod snake;
-mod systems;
 
 use bevy::prelude::*;
 use common::events::EndGame;
