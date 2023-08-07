@@ -55,12 +55,11 @@ pub fn handle_collision(
 ) {
     if let Ok(dinosaur_transform) = dinosaur_query.get_single() {
         for obstacle_transform in obstacle_query.iter() {
-            println!("{}", obstacle_transform.translation.y);
             if collide(
                 dinosaur_transform.translation,
-                Vec2::new(dinosaur_transform.scale.x, dinosaur_transform.scale.y),
+                Vec2::new(88.0, 94.0),
                 obstacle_transform.translation,
-                Vec2::new(obstacle_transform.scale.x, obstacle_transform.scale.y),
+                Vec2::new(92., 80.),
             )
             .is_some()
             {
