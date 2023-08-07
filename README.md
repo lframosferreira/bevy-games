@@ -17,3 +17,5 @@ Inspired by [python-games](https://inventwithpython.com/pygame/)
 ## Future
 
 - Tetris
+- Flappy Bird
+- Chrome dinosaur game
