@@ -48,27 +48,32 @@ pub fn handle_jump(
 
 pub fn handle_collision(
     mut commands: Commands,
-    dinosaur_query: Query<&Transform, With<Dinosaur>>,
-    obstacle_query: Query<&Transform, With<Obstacle>>,
+    dinosaur_query: Query<(&Handle<Image>, &Transform), With<Dinosaur>>,
+    obstacle_query: Query<(&Handle<Image>, &Transform), With<Obstacle>>,
     mut game_over_event_writer: EventWriter<EndGame>,
-    score: Res<Score>,
+    mut score: ResMut<Score>,
+    assets: Res<Assets<Image>>,
 ) {
-    if let Ok(dinosaur_transform) = dinosaur_query.get_single() {
-        for obstacle_transform in obstacle_query.iter() {
+    if let Ok((dinosaur_image_handle, dinosaur_transform)) = dinosaur_query.get_single() {
+        for (obstacle_image_handle, obstacle_transform) in obstacle_query.iter() {
+            let dinosaur_dimensions: Vec2 = assets.get(dinosaur_image_handle).unwrap().size();
+            let obstacle_dimensions: Vec2 = assets.get(obstacle_image_handle).unwrap().size();
             if collide(
                 dinosaur_transform.translation,
-                Vec2::new(88.0, 94.0),
+                dinosaur_dimensions,
                 obstacle_transform.translation,
-                Vec2::new(92., 80.),
+                obstacle_dimensions,
             )
             .is_some()
             {
-                return;
                 commands.insert_resource(NextState(Some(AppState::GameOver)));
                 game_over_event_writer.send(EndGame {
                     score: score.value as usize,
                 });
+                println!("{}", score.value);
                 return;
+            } else {
+                score.value += 1;
             }
         }
     }

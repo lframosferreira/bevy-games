@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use common::*;
 
 pub const OBSTACLE_SPEED: f32 = 600.0;
 
@@ -20,7 +21,7 @@ impl Plugin for ObstaclePlugin {
                 spawn_obstacles_over_time,
                 obstacles_movement,
                 despawn_obstacles_out_of_screen,
-            ),
+            ).run_if(in_state(AppState::InGame)),
         );
     }
 }

@@ -1,10 +1,12 @@
 use bevy::prelude::*;
 
+mod cloud;
 mod dinosaur;
 mod floor;
 mod obstacle;
 mod score;
 
+use cloud::CloudPlugin;
 use dinosaur::DinosaurPlugin;
 use floor::FloorPlugin;
 use obstacle::ObstaclePlugin;
@@ -14,6 +16,12 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((DinosaurPlugin, FloorPlugin, ObstaclePlugin, ScorePlugin));
+        app.add_plugins((
+            DinosaurPlugin,
+            FloorPlugin,
+            ObstaclePlugin,
+            ScorePlugin,
+            CloudPlugin,
+        ));
     }
 }

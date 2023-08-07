@@ -1,5 +1,4 @@
 mod game;
-mod systems;
 
 use common::CommonPlugin;
 use game::GamePlugin;
@@ -7,7 +6,8 @@ use game::GamePlugin;
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::*;
 
-use systems::*;
+pub const WINDOW_X: f32 = 1000.0;
+pub const WINDOW_Y: f32 = 600.0;
 
 fn main() {
     App::new()
@@ -23,6 +23,5 @@ fn main() {
         }))
         .add_plugins(DebugLinesPlugin::default())
         .add_plugins((GamePlugin, CommonPlugin))
-        .add_systems(Update, (pause_game, resume_game, death_sound_effect))
         .run();
 }
