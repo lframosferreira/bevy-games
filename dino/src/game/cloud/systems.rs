@@ -23,7 +23,7 @@ pub fn spawn_clouds_over_time(
 ) {
     if cloud_spawn_timer.timer.finished() {
         let window: &Window = window_query.get_single().unwrap();
-        let mut rng = rand::thread_rng();
+        let mut rng: ThreadRng = rand::thread_rng();
 
         commands.spawn((
             SpriteBundle {
