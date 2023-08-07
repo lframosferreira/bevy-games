@@ -4,6 +4,8 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use rand::Rng;
 
+const FRUIT_COLOR: Color = Color::RED;
+
 pub fn spawn_fruit(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>) {
     {
         let window = window_query.get_single().unwrap();
@@ -15,7 +17,7 @@ pub fn spawn_fruit(mut commands: Commands, window_query: Query<&Window, With<Pri
         commands.spawn((
             SpriteBundle {
                 sprite: Sprite {
-                    color: Color::rgb(1., 0.2, 0.2),
+                    color: FRUIT_COLOR,
                     custom_size: Some(SIZE),
                     ..default()
                 },

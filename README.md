@@ -2,13 +2,18 @@
 
 Blazingly fast arcade games made in Rust with the Bevy Game Engine
 
-## Current work
+Inspired by [python-games](https://inventwithpython.com/pygame/)
+
+## Finished
 
 - Snake
+- InkSpill
+
+## Current work
+
+- Chrome dinosaur game
+- Flappy Bird
 
 ## Future
 
-- InkSpill
 - Tetris
-- Flappy Bird
-- Chrome dinosaur game
