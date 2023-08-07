@@ -63,6 +63,7 @@ pub fn handle_collision(
             )
             .is_some()
             {
+                return;
                 commands.insert_resource(NextState(Some(AppState::GameOver)));
                 game_over_event_writer.send(EndGame {
                     score: score.value as usize,

@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use rand::Rng;
 
 use super::OBSTACLE_SPEED;
 use crate::game::dinosaur::DINO_INITIAL_Y_POS;
@@ -23,10 +24,16 @@ pub fn spawn_obstacles_over_time(
     if obstacle_spawn_timer.timer.finished() {
         let window: &Window = window_query.get_single().unwrap();
         let obstacle_kind: ObstacleKind = rand::random();
+        let amount: u32 = rand::thread_rng().gen_range(1..4);
         let sprite_bundle = match obstacle_kind {
-            ObstacleKind::Cactus => SpriteBundle {
+            ObstacleKind::CactusSmall => SpriteBundle {
                 transform: Transform::from_xyz(window.width(), DINO_INITIAL_Y_POS, 0.0),
-                texture: asset_server.load("sprites/cacti/cacti_large_1.png"),
+                texture: asset_server.load(format!("sprites/cacti/cacti_small_{}.png", amount)),
+                ..default()
+            },
+            ObstacleKind::CactusLarge => SpriteBundle {
+                transform: Transform::from_xyz(window.width(), DINO_INITIAL_Y_POS, 0.0),
+                texture: asset_server.load(format!("sprites/cacti/cacti_large_{}.png", amount)),
                 ..default()
             },
             ObstacleKind::Pterodactyl => SpriteBundle {

@@ -9,13 +9,15 @@ pub struct Obstacle {
 
 pub enum ObstacleKind {
     Pterodactyl,
-    Cactus,
+    CactusSmall,
+    CactusLarge,
 }
 
 impl Distribution<ObstacleKind> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> ObstacleKind {
-        match rng.gen_range(0..2) {
-            0 => ObstacleKind::Cactus,
+        match rng.gen_range(0..3) {
+            0 => ObstacleKind::CactusSmall,
+            1 => ObstacleKind::CactusLarge,
             _ => ObstacleKind::Pterodactyl,
         }
     }
