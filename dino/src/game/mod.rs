@@ -3,8 +3,8 @@ use bevy::prelude::*;
 mod cloud;
 mod dinosaur;
 mod floor;
-mod obstacle;
-mod score;
+pub mod obstacle;
+pub mod score;
 
 use cloud::CloudPlugin;
 use dinosaur::DinosaurPlugin;

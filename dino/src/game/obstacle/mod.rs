@@ -5,7 +5,7 @@ pub const OBSTACLE_INITIAL_SPEED: f32 = 600.0;
 pub const OBSTACLE_SPEED_INCREASE_RATE: f32 = 100.0;
 
 pub mod components;
-mod resources;
+pub mod resources;
 mod systems;
 
 use self::resources::{ObstacleSpawnTimer, ObstacleSpeed};

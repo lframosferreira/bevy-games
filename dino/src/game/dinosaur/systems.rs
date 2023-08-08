@@ -70,8 +70,6 @@ pub fn handle_collision(
                 game_over_event_writer.send(EndGame {
                     score: score.value as usize,
                 });
-                println!("{}", score.value);
-                return;
             } else {
                 score.value += 1;
             }
