@@ -6,7 +6,7 @@ pub const OBSTACLE_SPEED_INCREASE_RATE: f32 = 100.0;
 
 pub mod components;
 pub mod resources;
-mod systems;
+pub mod systems;
 
 use self::resources::{ObstacleSpawnTimer, ObstacleSpeed};
 use self::systems::*;

@@ -13,7 +13,7 @@ use super::floor::FLOOR_HEIGHT;
 pub const DINO_HEIGHT: f32 = 80.0;
 pub const DINO_X_POS: f32 = 100.0;
 pub const DINO_INITIAL_Y_POS: f32 = FLOOR_HEIGHT + DINO_HEIGHT / 2.0;
-pub const GRAVITY: f32 = -1.5;
+pub const GRAVITY: f32 = -1.2;
 pub const DINO_INITIAL_VERTICAL_SPEED: f32 = 25.0;
 
 pub struct DinosaurPlugin;
