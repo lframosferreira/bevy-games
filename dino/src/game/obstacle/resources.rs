@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use super::OBSTACLE_INITIAL_SPEED;
 
-pub const OBSTACLE_SPAWN_TIME: f32 = 2.0;
+pub const OBSTACLE_SPAWN_TIME: f32 = 1.5;
 
 #[derive(Resource)]
 pub struct ObstacleSpawnTimer {
