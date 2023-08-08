@@ -8,7 +8,9 @@ use common::AppState;
 
 use super::components::Dinosaur;
 use super::resources::DinoVerticalMovement;
-use super::{DINO_HEIGHT, DINO_INITIAL_VERTICAL_SPEED, DINO_INITIAL_Y_POS, DINO_X_POS, GRAVITY};
+use super::{
+    DINO_DOWN_Y_POS, DINO_INITIAL_VERTICAL_SPEED, DINO_INITIAL_Y_POS, DINO_X_POS, GRAVITY,
+};
 
 pub fn spawn_dinosaur(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
@@ -82,17 +84,20 @@ pub fn dinosaur_down_movement(
     mut dinosaur_query: Query<(&Transform, Entity), With<Dinosaur>>,
     keyboard_input: Res<Input<KeyCode>>,
     asset_server: Res<AssetServer>,
+    dinosaur_vertical_movement: Res<DinoVerticalMovement>,
 ) {
     if let Ok((dinosaur_transform, dinosaur_entity)) = dinosaur_query.get_single_mut() {
         if keyboard_input.pressed(KeyCode::Down) {
-            commands.entity(dinosaur_entity).insert(SpriteBundle {
-                transform: dinosaur_transform.clone(),
-                texture: asset_server.load("sprites/dino/dino_down_1.png"),
-                ..default()
-            });
+            if !dinosaur_vertical_movement.moving {
+                commands.entity(dinosaur_entity).insert(SpriteBundle {
+                    transform: Transform::from_xyz(DINO_X_POS, DINO_DOWN_Y_POS, 0.0),
+                    texture: asset_server.load("sprites/dino/dino_down_1.png"),
+                    ..default()
+                });
+            }
         } else if keyboard_input.just_released(KeyCode::Down) {
             commands.entity(dinosaur_entity).insert(SpriteBundle {
-                transform: dinosaur_transform.clone(),
+                transform: Transform::from_xyz(DINO_X_POS, DINO_INITIAL_Y_POS, 0.0),
                 texture: asset_server.load("sprites/dino/dino_1.png"),
                 ..default()
             });

@@ -24,9 +24,16 @@ pub fn despawn_obstacles(
 }
 
 pub fn set_dinosaur_in_initial_position(
-    mut dinosaur_query: Query<&mut Transform, With<Dinosaur>>,
+    mut commands: Commands,
+    mut dinosaur_query: Query<(&mut Transform, Entity), With<Dinosaur>>,
+    asset_server: Res<AssetServer>,
 ) {
-    if let Ok(mut dinosaur_transform) = dinosaur_query.get_single_mut() {
+    if let Ok((mut dinosaur_transform, dinosaur_entity)) = dinosaur_query.get_single_mut() {
         dinosaur_transform.translation.y = DINO_INITIAL_Y_POS;
+        commands.entity(dinosaur_entity).insert(SpriteBundle {
+            transform: dinosaur_transform.clone(),
+            texture: asset_server.load("sprites/dino/dino_1.png"),
+            ..default()
+        });
     }
 }
