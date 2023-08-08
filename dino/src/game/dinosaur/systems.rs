@@ -7,7 +7,7 @@ use common::events::EndGame;
 use common::AppState;
 
 use super::components::Dinosaur;
-use super::resources::DinoVerticalMovement;
+use super::resources::{DinoDown, DinoVerticalMovement};
 use super::{
     DINO_DOWN_Y_POS, DINO_INITIAL_VERTICAL_SPEED, DINO_INITIAL_Y_POS, DINO_X_POS, GRAVITY,
 };
@@ -27,6 +27,7 @@ pub fn handle_jump(
     mut dinosaur_query: Query<&mut Transform, With<Dinosaur>>,
     keyboard_input: Res<Input<KeyCode>>,
     mut dino_vertical_movement: ResMut<DinoVerticalMovement>,
+    dino_down: Res<DinoDown>,
 ) {
     if let Ok(mut dinosaur_transform) = dinosaur_query.get_single_mut() {
         if dino_vertical_movement.moving {
@@ -39,7 +40,7 @@ pub fn handle_jump(
                 dino_vertical_movement.speed += GRAVITY;
             }
         } else {
-            if keyboard_input.just_pressed(KeyCode::Space) {
+            if keyboard_input.just_pressed(KeyCode::Space) && !dino_down.is_down {
                 dino_vertical_movement.moving = true;
                 dinosaur_transform.translation.y += dino_vertical_movement.speed;
                 dino_vertical_movement.speed += GRAVITY;
@@ -85,6 +86,7 @@ pub fn dinosaur_down_movement(
     keyboard_input: Res<Input<KeyCode>>,
     asset_server: Res<AssetServer>,
     dinosaur_vertical_movement: Res<DinoVerticalMovement>,
+    mut dino_down: ResMut<DinoDown>,
 ) {
     if let Ok(dinosaur_entity) = dinosaur_query.get_single_mut() {
         if keyboard_input.pressed(KeyCode::Down) {
@@ -94,13 +96,16 @@ pub fn dinosaur_down_movement(
                     texture: asset_server.load("sprites/dino/dino_down_1.png"),
                     ..default()
                 });
+                dino_down.is_down = true;
             }
-        } else if keyboard_input.just_released(KeyCode::Down) {
+        } else if keyboard_input.just_released(KeyCode::Down) && !dinosaur_vertical_movement.moving
+        {
             commands.entity(dinosaur_entity).insert(SpriteBundle {
                 transform: Transform::from_xyz(DINO_X_POS, DINO_INITIAL_Y_POS, 0.0),
                 texture: asset_server.load("sprites/dino/dino_1.png"),
                 ..default()
             });
+            dino_down.is_down = false;
         }
     }
 }

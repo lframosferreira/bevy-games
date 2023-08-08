@@ -4,7 +4,7 @@ pub mod components;
 mod resources;
 mod systems;
 
-use self::resources::DinoVerticalMovement;
+use self::resources::{DinoDown, DinoVerticalMovement};
 use self::systems::*;
 use common::AppState;
 
@@ -23,6 +23,7 @@ pub struct DinosaurPlugin;
 impl Plugin for DinosaurPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<DinoVerticalMovement>()
+            .init_resource::<DinoDown>()
             .add_systems(Startup, spawn_dinosaur)
             .add_systems(
                 Update,
