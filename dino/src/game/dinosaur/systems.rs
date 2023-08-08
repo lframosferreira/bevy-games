@@ -81,12 +81,12 @@ pub fn handle_collision(
 
 pub fn dinosaur_down_movement(
     mut commands: Commands,
-    mut dinosaur_query: Query<(&Transform, Entity), With<Dinosaur>>,
+    mut dinosaur_query: Query<Entity, With<Dinosaur>>,
     keyboard_input: Res<Input<KeyCode>>,
     asset_server: Res<AssetServer>,
     dinosaur_vertical_movement: Res<DinoVerticalMovement>,
 ) {
-    if let Ok((dinosaur_transform, dinosaur_entity)) = dinosaur_query.get_single_mut() {
+    if let Ok(dinosaur_entity) = dinosaur_query.get_single_mut() {
         if keyboard_input.pressed(KeyCode::Down) {
             if !dinosaur_vertical_movement.moving {
                 commands.entity(dinosaur_entity).insert(SpriteBundle {
