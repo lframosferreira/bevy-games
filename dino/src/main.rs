@@ -28,7 +28,7 @@ fn main() {
         .add_plugins((GamePlugin, CommonPlugin))
         .add_systems(
             OnExit(AppState::GameOver),
-            (reset_score, reset_obstacle_speed, despawn_obstacles),
+            (reset_score, reset_obstacle_speed, despawn_obstacles, set_dinosaur_in_initial_position),
         )
         .run();
 }

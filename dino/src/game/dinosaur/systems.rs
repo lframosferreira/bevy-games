@@ -78,14 +78,24 @@ pub fn handle_collision(
 }
 
 pub fn dinosaur_down_movement(
-    mut dinosaur_query: Query<&mut Transform, With<Dinosaur>>,
+    mut commands: Commands,
+    mut dinosaur_query: Query<(&Transform, Entity), With<Dinosaur>>,
     keyboard_input: Res<Input<KeyCode>>,
+    asset_server: Res<AssetServer>,
 ) {
-    if let Ok(mut dinosaur_transform) = dinosaur_query.get_single_mut() {
+    if let Ok((dinosaur_transform, dinosaur_entity)) = dinosaur_query.get_single_mut() {
         if keyboard_input.pressed(KeyCode::Down) {
-            dinosaur_transform.translation.y = DINO_INITIAL_Y_POS - DINO_HEIGHT / 2.0;
+            commands.entity(dinosaur_entity).insert(SpriteBundle {
+                transform: dinosaur_transform.clone(),
+                texture: asset_server.load("sprites/dino/dino_down_1.png"),
+                ..default()
+            });
         } else if keyboard_input.just_released(KeyCode::Down) {
-            dinosaur_transform.translation.y = DINO_INITIAL_Y_POS;
+            commands.entity(dinosaur_entity).insert(SpriteBundle {
+                transform: dinosaur_transform.clone(),
+                texture: asset_server.load("sprites/dino/dino_1.png"),
+                ..default()
+            });
         }
     }
 }

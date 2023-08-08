@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 mod cloud;
-mod dinosaur;
+pub mod dinosaur;
 mod floor;
 pub mod obstacle;
 pub mod score;
