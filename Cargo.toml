@@ -1,6 +1,15 @@
 [workspace]
+resolver = "2"
 
-members = ["snake-game", "tetris", "inkspill", "dino", "flappy", "common"]
+members = [
+    "common",
+    "dino",
+    "flappy",
+    "inkspill",
+    "snake-game",
+    "tetris",
+    "twenty-48",
+]
 
 [profile.dev]
 opt-level = 1
