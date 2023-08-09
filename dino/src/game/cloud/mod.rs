@@ -19,7 +19,8 @@ impl Plugin for CloudPlugin {
                 spawn_clouds_over_time,
                 despawn_clouds_over_time,
                 move_clouds_over_time,
-            ).run_if(in_state(AppState::InGame)),
+            )
+                .run_if(in_state(AppState::InGame)),
         );
     }
 }

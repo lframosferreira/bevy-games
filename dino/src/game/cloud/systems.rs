@@ -7,13 +7,9 @@ use super::resources::CloudSpawnTimer;
 
 pub const CLOUD_SPEED: f32 = 450.0;
 
-pub fn tick_cloud_spawn_timer(
-    mut cloud_spawn_timer: ResMut<CloudSpawnTimer>,
-    time: Res<Time>,
-) {
+pub fn tick_cloud_spawn_timer(mut cloud_spawn_timer: ResMut<CloudSpawnTimer>, time: Res<Time>) {
     cloud_spawn_timer.timer.tick(time.delta());
 }
-
 
 pub fn spawn_clouds_over_time(
     mut commands: Commands,
