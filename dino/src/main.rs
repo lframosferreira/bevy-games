@@ -15,7 +15,7 @@ fn main() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 resolution: (WINDOW_X, WINDOW_Y).into(),
-                title: "Chrome Dinosaur".to_string(),
+                title: "Bevy Dinosaur".to_string(),
                 ..default()
             }),
             ..default()

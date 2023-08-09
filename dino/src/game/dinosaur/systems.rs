@@ -52,7 +52,7 @@ pub fn handle_collision(
     dinosaur_query: Query<(&Handle<Image>, &Transform), With<Dinosaur>>,
     obstacle_query: Query<(&Handle<Image>, &Transform), With<Obstacle>>,
     mut game_over_event_writer: EventWriter<EndGame>,
-    mut score: ResMut<Score>,
+    score: Res<Score>,
     assets: Res<Assets<Image>>,
 ) {
     if let Ok((dinosaur_image_handle, dinosaur_transform)) = dinosaur_query.get_single() {
@@ -71,8 +71,6 @@ pub fn handle_collision(
                 game_over_event_writer.send(EndGame {
                     score: score.value as usize,
                 });
-            } else {
-                score.value += 1;
             }
         }
     }
