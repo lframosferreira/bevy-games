@@ -1,10 +1,15 @@
-use super::{components::Block, BLOCK_LENGTH};
+use super::{components::Block, resources::Score, BLOCK_LENGTH};
 use bevy::prelude::*;
+use common::{events::EndGame, AppState};
 use rand::{seq::IteratorRandom, thread_rng};
 
+pub fn reset_score(mut score: ResMut<Score>) {
+    score.value = 0
+}
+
 pub fn spawn_blocks(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let avalaible: Vec<usize> = (0..16).collect();
-    let sample = avalaible.iter().choose_multiple(&mut thread_rng(), 2);
+    let available: Vec<usize> = (0..16).collect();
+    let sample = available.iter().choose_multiple(&mut thread_rng(), 2);
     for index in sample {
         commands.spawn(_spawn_block(Block::new_random(index), &asset_server));
     }
@@ -34,11 +39,24 @@ fn _spawn_block(block: Block, asset_server: &Res<AssetServer>) -> (Text2dBundle,
     )
 }
 
+pub fn respawn_blocks(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    block_query: Query<Entity, With<Block>>,
+) {
+    for entity in block_query.iter() {
+        commands.entity(entity).despawn();
+    }
+    spawn_blocks(commands, asset_server);
+}
+
 pub fn update_direction(
     keyboard_input: Res<Input<KeyCode>>,
     mut block_query: Query<(Entity, &mut Block, &mut Text), With<Block>>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut score: ResMut<Score>,
+    mut game_over_event_writer: EventWriter<EndGame>,
 ) {
     const KEYS: [KeyCode; 4] = [KeyCode::Left, KeyCode::Down, KeyCode::Right, KeyCode::Up];
     let was_pressed: Vec<bool> = KEYS
@@ -58,6 +76,7 @@ pub fn update_direction(
                 if number_matrix[block.x()][block.y()] == 0 {
                     commands.entity(entity).despawn();
                 } else if my_cool_number != block.number() {
+                    score.value += block.number();
                     block.set_number(my_cool_number);
                     *text = Text::from_section(format!("{}", block.0), text_style(&asset_server));
                 }
@@ -76,7 +95,24 @@ pub fn update_direction(
             }
             let sample = avalaible.iter().choose(&mut thread_rng());
             if let Some(index) = sample {
-                commands.spawn(_spawn_block(Block::new_random(index), &asset_server));
+                let block = Block::new_random(index);
+                commands.spawn(_spawn_block(block, &asset_server));
+                const DIRECTIONS: [[bool; 4]; 4] = [
+                    [true, false, false, false],
+                    [false, true, false, false],
+                    [false, false, true, false],
+                    [false, false, false, true],
+                ];
+                number_matrix[index / 4][index % 4] = block.number();
+                let is_game_over = DIRECTIONS.iter().all(|direction| {
+                    let mut matrix_clone = number_matrix;
+                    _update_direction(direction, &mut matrix_clone);
+                    number_matrix == matrix_clone
+                });
+                if is_game_over {
+                    commands.insert_resource(NextState(Some(AppState::GameOver)));
+                    game_over_event_writer.send(EndGame { score: score.value });
+                }
             }
         }
     }

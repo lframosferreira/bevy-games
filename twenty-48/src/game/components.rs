@@ -4,16 +4,6 @@ use rand::{thread_rng, Rng};
 #[derive(Component, Clone, Copy)]
 pub struct Block(pub usize, usize, usize);
 
-impl Default for Block {
-    fn default() -> Self {
-        let mut rng = rand::thread_rng();
-        let x = rng.gen_range(0..4);
-        let y = rng.gen_range(0..4);
-        let value = if rng.gen_range(0..10) == 0 { 4 } else { 2 };
-        Block(value, x, y)
-    }
-}
-
 impl Block {
     pub fn new_random(index: &usize) -> Block {
         Block::new(
