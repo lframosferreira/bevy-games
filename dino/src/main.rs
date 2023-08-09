@@ -1,11 +1,9 @@
 mod game;
 
-use common::CommonPlugin;
-use game::GamePlugin;
-
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::*;
-use common::*;
+use common::CommonPlugin;
+use game::GamePlugin;
 
 pub const WINDOW_X: f32 = 1000.0;
 pub const WINDOW_Y: f32 = 600.0;
