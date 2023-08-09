@@ -1,14 +1,12 @@
-use bevy::prelude::*;
-
 pub mod components;
 mod resources;
 mod systems;
 
-use self::resources::{DinoDown, DinoVerticalMovement};
-use self::systems::*;
-use common::AppState;
-
 use super::floor::FLOOR_HEIGHT;
+use bevy::prelude::*;
+use common::AppState;
+use resources::{DinoDown, DinoVerticalMovement};
+use systems::*;
 
 pub const DINO_HEIGHT: f32 = 84.0;
 pub const DINO_DOWN_HEIGHT: f32 = 50.0;
@@ -29,6 +27,7 @@ impl Plugin for DinosaurPlugin {
                 Update,
                 (handle_jump, handle_collision, dinosaur_down_movement)
                     .run_if(in_state(AppState::InGame)),
-            );
+            )
+            .add_systems(OnExit(AppState::GameOver), set_dinosaur_in_initial_position);
     }
 }

@@ -84,3 +84,16 @@ pub fn set_obstacle_speed(score: Res<Score>, mut obstacle_speed: ResMut<Obstacle
     obstacle_speed.speed =
         OBSTACLE_INITIAL_SPEED + OBSTACLE_SPEED_INCREASE_RATE * ((score.value / 500) as f32)
 }
+
+pub fn reset_obstacle_speed(mut obstacle_speed: ResMut<ObstacleSpeed>) {
+    obstacle_speed.speed = OBSTACLE_INITIAL_SPEED;
+}
+
+pub fn despawn_obstacles(
+    mut commands: Commands,
+    mut obstacle_query: Query<Entity, With<Obstacle>>,
+) {
+    for obstacle_entity in obstacle_query.iter_mut() {
+        commands.entity(obstacle_entity).despawn();
+    }
+}

@@ -1,12 +1,12 @@
-use bevy::prelude::*;
-use common::*;
-
 mod components;
 mod resources;
 mod systems;
 
-use self::resources::*;
-use self::systems::*;
+use bevy::prelude::*;
+use common::*;
+
+use resources::*;
+use systems::*;
 
 pub struct CloudPlugin;
 

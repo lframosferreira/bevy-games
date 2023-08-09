@@ -1,9 +1,7 @@
 mod game;
-mod systems;
 
 use common::CommonPlugin;
 use game::GamePlugin;
-use systems::*;
 
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::*;
@@ -26,14 +24,5 @@ fn main() {
         }))
         .add_plugins(DebugLinesPlugin::default())
         .add_plugins((GamePlugin, CommonPlugin))
-        .add_systems(
-            OnExit(AppState::GameOver),
-            (
-                reset_score,
-                reset_obstacle_speed,
-                despawn_obstacles,
-                set_dinosaur_in_initial_position,
-            ),
-        )
         .run();
 }

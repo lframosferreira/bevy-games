@@ -1,9 +1,8 @@
+use super::components::Cloud;
+use super::resources::CloudSpawnTimer;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use rand::prelude::*;
-
-use super::components::Cloud;
-use super::resources::CloudSpawnTimer;
 
 pub const CLOUD_SPEED: f32 = 450.0;
 

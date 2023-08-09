@@ -17,13 +17,7 @@ impl Default for DinoVerticalMovement {
     }
 }
 
-#[derive(Resource)]
+#[derive(Resource, Default)]
 pub struct DinoDown {
     pub is_down: bool,
-}
-
-impl Default for DinoDown {
-    fn default() -> Self {
-        Self { is_down: false }
-    }
 }

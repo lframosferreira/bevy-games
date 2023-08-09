@@ -39,12 +39,10 @@ pub fn handle_jump(
                 dinosaur_transform.translation.y += dino_vertical_movement.speed;
                 dino_vertical_movement.speed += GRAVITY;
             }
-        } else {
-            if keyboard_input.just_pressed(KeyCode::Space) && !dino_down.is_down {
-                dino_vertical_movement.moving = true;
-                dinosaur_transform.translation.y += dino_vertical_movement.speed;
-                dino_vertical_movement.speed += GRAVITY;
-            }
+        } else if keyboard_input.just_pressed(KeyCode::Space) && !dino_down.is_down {
+            dino_vertical_movement.moving = true;
+            dinosaur_transform.translation.y += dino_vertical_movement.speed;
+            dino_vertical_movement.speed += GRAVITY;
         }
     }
 }
@@ -107,5 +105,20 @@ pub fn dinosaur_down_movement(
             });
             dino_down.is_down = false;
         }
+    }
+}
+
+pub fn set_dinosaur_in_initial_position(
+    mut commands: Commands,
+    mut dinosaur_query: Query<(&mut Transform, Entity), With<Dinosaur>>,
+    asset_server: Res<AssetServer>,
+) {
+    if let Ok((mut dinosaur_transform, dinosaur_entity)) = dinosaur_query.get_single_mut() {
+        dinosaur_transform.translation.y = DINO_INITIAL_Y_POS;
+        commands.entity(dinosaur_entity).insert(SpriteBundle {
+            transform: dinosaur_transform.clone(),
+            texture: asset_server.load("sprites/dino/dino_1.png"),
+            ..default()
+        });
     }
 }

@@ -27,6 +27,10 @@ impl Plugin for ObstaclePlugin {
                     set_obstacle_speed,
                 )
                     .run_if(in_state(AppState::InGame)),
+            )
+            .add_systems(
+                OnExit(AppState::GameOver),
+                (reset_obstacle_speed, despawn_obstacles),
             );
     }
 }
