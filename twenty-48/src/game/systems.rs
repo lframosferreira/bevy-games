@@ -1,23 +1,28 @@
-use super::{components::Block, BLOCK_LENGTH, BLOCK_SIZE};
+use super::{components::Block, BLOCK_LENGTH};
 use bevy::prelude::*;
 use rand::{seq::IteratorRandom, thread_rng};
 
-pub fn spawn_blocks(mut commands: Commands) {
+pub fn spawn_blocks(mut commands: Commands, asset_server: Res<AssetServer>) {
     let avalaible: Vec<usize> = (0..16).collect();
     let sample = avalaible.iter().choose_multiple(&mut thread_rng(), 2);
     for index in sample {
-        commands.spawn(_spawn_block(Block::new_random(index)));
+        commands.spawn(_spawn_block(Block::new_random(index), &asset_server));
     }
 }
 
-fn _spawn_block(block: Block) -> (SpriteBundle, Block) {
+fn text_style(asset_server: &Res<AssetServer>) -> TextStyle {
+    TextStyle {
+        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+        font_size: 60.0,
+        color: Color::WHITE,
+    }
+}
+
+fn _spawn_block(block: Block, asset_server: &Res<AssetServer>) -> (Text2dBundle, Block) {
     (
-        SpriteBundle {
-            sprite: Sprite {
-                color: block.get_color(),
-                custom_size: Some(BLOCK_SIZE),
-                ..default()
-            },
+        Text2dBundle {
+            text: Text::from_section(format!("{}", block.0), text_style(asset_server))
+                .with_alignment(TextAlignment::Center),
             transform: Transform::from_xyz(
                 block.x() as f32 * BLOCK_LENGTH + BLOCK_LENGTH / 2.,
                 block.y() as f32 * BLOCK_LENGTH + BLOCK_LENGTH / 2.,
@@ -31,8 +36,9 @@ fn _spawn_block(block: Block) -> (SpriteBundle, Block) {
 
 pub fn update_direction(
     keyboard_input: Res<Input<KeyCode>>,
-    mut block_query: Query<(Entity, &mut Block, &mut Sprite), With<Block>>,
+    mut block_query: Query<(Entity, &mut Block, &mut Text), With<Block>>,
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
 ) {
     const KEYS: [KeyCode; 4] = [KeyCode::Left, KeyCode::Down, KeyCode::Right, KeyCode::Up];
     let was_pressed: Vec<bool> = KEYS
@@ -47,13 +53,13 @@ pub fn update_direction(
         let original_matrix = number_matrix;
         _update_direction(&was_pressed, &mut number_matrix);
         if original_matrix != number_matrix {
-            for (entity, mut block, mut sprite) in block_query.iter_mut() {
+            for (entity, mut block, mut text) in block_query.iter_mut() {
                 let my_cool_number = number_matrix[block.x()][block.y()];
                 if number_matrix[block.x()][block.y()] == 0 {
                     commands.entity(entity).despawn();
                 } else if my_cool_number != block.number() {
                     block.set_number(my_cool_number);
-                    sprite.color = block.get_color();
+                    *text = Text::from_section(format!("{}", block.0), text_style(&asset_server));
                 }
             }
             let mut avalaible: Vec<usize> = (0..16).collect();
@@ -64,13 +70,13 @@ pub fn update_direction(
                     }
                     if number_matrix[i][j] != 0 && original_matrix[i][j] == 0 {
                         let block = Block::new(number_matrix[i][j], i, j);
-                        commands.spawn(_spawn_block(block));
+                        commands.spawn(_spawn_block(block, &asset_server));
                     }
                 }
             }
             let sample = avalaible.iter().choose(&mut thread_rng());
             if let Some(index) = sample {
-                commands.spawn(_spawn_block(Block::new_random(index)));
+                commands.spawn(_spawn_block(Block::new_random(index), &asset_server));
             }
         }
     }

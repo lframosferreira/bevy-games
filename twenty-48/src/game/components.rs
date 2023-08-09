@@ -1,4 +1,4 @@
-use bevy::prelude::{Color, Component};
+use bevy::prelude::Component;
 use rand::{thread_rng, Rng};
 
 #[derive(Component, Clone, Copy)]
@@ -15,18 +15,6 @@ impl Default for Block {
 }
 
 impl Block {
-    pub fn get_color(&self) -> Color {
-        match self.0 {
-            2 => Color::RED,
-            4 => Color::YELLOW,
-            8 => Color::BLUE,
-            16 => Color::GREEN,
-            32 => Color::PURPLE,
-            64 => Color::CYAN,
-            128 => Color::PINK,
-            _ => Color::WHITE,
-        }
-    }
     pub fn new_random(index: &usize) -> Block {
         Block::new(
             if thread_rng().gen_range(0..10) == 0 {
