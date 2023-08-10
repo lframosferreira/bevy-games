@@ -4,12 +4,12 @@ use bevy::prelude::*;
 use common::CommonPlugin;
 use game::GamePlugin;
 
-const WINDOW_X: f32 = 1000.0;
+const WINDOW_X: f32 = 1200.0;
 const WINDOW_Y: f32 = 600.0;
 
 fn main() {
     App::new()
-        .insert_resource(ClearColor(Color::rgb(1.0, 1.0, 1.0)))
+        .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
         .insert_resource(Msaa::default())
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {

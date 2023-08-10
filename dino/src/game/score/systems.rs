@@ -33,7 +33,7 @@ pub fn spawn_score_text(
             text: Text::from_section(
                 "Score: 00000",
                 TextStyle {
-                    color: Color::BLACK,
+                    color: Color::WHITE,
                     font: asset_server.load("fonts/FiraSans-Bold.ttf"),
                     font_size: 20.0,
                 },
@@ -58,7 +58,7 @@ pub fn update_score_text(
             text: Text::from_section(
                 format!("Score: {:0>5}", score.value.to_string()),
                 TextStyle {
-                    color: Color::BLACK,
+                    color: Color::WHITE,
                     font: asset_server.load("fonts/FiraSans-Bold.ttf"),
                     font_size: 20.0,
                 },

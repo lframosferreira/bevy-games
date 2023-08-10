@@ -60,10 +60,12 @@ pub fn spawn_obstacles_over_time(
 
 pub fn despawn_obstacles_out_of_screen(
     mut commands: Commands,
-    mut obstacle_query: Query<(&Transform, Entity), With<Obstacle>>,
+    mut obstacle_query: Query<(&Handle<Image>, &Transform, Entity), With<Obstacle>>,
+    assets: Res<Assets<Image>>,
 ) {
-    for (obstacle_transform, obstacle_entity) in obstacle_query.iter_mut() {
-        if obstacle_transform.translation.x < 0.0 {
+    for (obstacle_handle_image, obstacle_transform, obstacle_entity) in obstacle_query.iter_mut() {
+        let obstacle_width: f32 = assets.get(obstacle_handle_image).unwrap().size().x;
+        if obstacle_transform.translation.x < -obstacle_width / 2.0 {
             commands.entity(obstacle_entity).despawn();
         }
     }

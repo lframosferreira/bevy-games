@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
+use crate::game::obstacle::resources::ObstacleSpeed;
+
 use super::components::Floor;
 use super::FLOOR_HEIGHT;
 
@@ -18,4 +20,20 @@ pub fn spawn_floor(
         },
         Floor {},
     ));
+}
+
+pub fn spawn_floor_when_needed(mut commands: Commands, floor_query: Query<&Transform, With<Floor>>){
+    for floor_transform in floor_query.iter() {
+        if floor_transform.translation.x > 0.0 {}
+    }
+}
+
+pub fn move_floor(
+    mut floor_query: Query<&mut Transform, With<Floor>>,
+    time: Res<Time>,
+    obstacle_speed: Res<ObstacleSpeed>,
+) {
+    for mut floor_transform in floor_query.iter_mut() {
+        floor_transform.translation.x -= obstacle_speed.speed * time.delta_seconds();
+    }
 }

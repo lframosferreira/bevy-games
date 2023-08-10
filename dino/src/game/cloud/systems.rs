@@ -35,12 +35,17 @@ pub fn spawn_clouds_over_time(
     }
 }
 
+// Como as nuvens tem sempre o mesmo comprimento, não há a necessidade de se fazer uma query com os
+// Handle<Image> das nuvens, basta forças a metade do comprimento delas (46.0) para que o despawn fique fluido.
+// No caso da adição de outros elementos no céu além das nuvens esse comportamento deve mudar e ser mais similar
+// ao que ocorre com os obstáculos
+
 pub fn despawn_clouds_over_time(
     mut commands: Commands,
     cloud_query: Query<(&Transform, Entity), With<Cloud>>,
 ) {
     for (cloud_transform, cloud_entity) in cloud_query.iter() {
-        if cloud_transform.translation.x < 0.0 {
+        if cloud_transform.translation.x < -46.0 {
             commands.entity(cloud_entity).despawn();
         }
     }
