@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-const SCORE_UPDATE_TIME: f32 = 1.0;
+const SCORE_UPDATE_TIME: f32 = 0.05;
 
 #[derive(Resource, Default)]
 pub struct Score {
