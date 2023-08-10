@@ -1,12 +1,9 @@
 use super::components::Floor;
+use super::resources::FloorEntitiesCount;
 use super::FLOOR_HEIGHT;
 use crate::game::obstacle::resources::ObstacleSpeed;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-
-use super::resources::FloorEntitiesCount;
-
-const FLOOR_SPRITE_WIDTH: f32 = 2400.0;
 
 pub fn spawn_floor(
     mut commands: Commands,
