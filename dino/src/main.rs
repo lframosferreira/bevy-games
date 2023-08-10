@@ -22,7 +22,7 @@ fn main() {
             ..default()
         }))
         .add_plugins(DebugLinesPlugin::default())
-        .add_plugins((GamePlugin, CommonPlugin))
+        .add_plugins((GamePlugin, CommonPlugin::new_light()))
         .add_systems(Update, (pause_game, resume_game, death_sound_effect))
         .run();
 }
