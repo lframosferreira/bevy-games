@@ -37,9 +37,9 @@ pub fn spawn_clouds_over_time(
 
 pub fn despawn_clouds_over_time(
     mut commands: Commands,
-    mut cloud_query: Query<(&Transform, Entity), With<Cloud>>,
+    cloud_query: Query<(&Transform, Entity), With<Cloud>>,
 ) {
-    for (cloud_transform, cloud_entity) in cloud_query.iter_mut() {
+    for (cloud_transform, cloud_entity) in cloud_query.iter() {
         if cloud_transform.translation.x < 0.0 {
             commands.entity(cloud_entity).despawn();
         }

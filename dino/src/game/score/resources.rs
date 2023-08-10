@@ -1,4 +1,4 @@
-use bevy::prelude::{Resource, Timer, TimerMode};
+use bevy::prelude::*;
 
 const SCORE_UPDATE_TIME: f32 = 1.0;
 

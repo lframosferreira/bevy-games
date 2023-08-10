@@ -57,8 +57,8 @@ pub fn handle_collision(
 ) {
     if let Ok((dinosaur_image_handle, dinosaur_transform)) = dinosaur_query.get_single() {
         for (obstacle_image_handle, obstacle_transform) in obstacle_query.iter() {
-            let dinosaur_dimensions: Vec2 = assets.get(dinosaur_image_handle).unwrap().size();
-            let obstacle_dimensions: Vec2 = assets.get(obstacle_image_handle).unwrap().size();
+            let dinosaur_dimensions = assets.get(dinosaur_image_handle).unwrap().size();
+            let obstacle_dimensions = assets.get(obstacle_image_handle).unwrap().size();
             if collide(
                 dinosaur_transform.translation,
                 dinosaur_dimensions,

@@ -4,7 +4,6 @@ mod systems;
 
 use bevy::prelude::*;
 use common::*;
-
 use resources::*;
 use systems::*;
 

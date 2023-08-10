@@ -26,7 +26,7 @@ pub fn spawn_obstacles_over_time(
         let window: &Window = window_query.get_single().unwrap();
         let obstacle_kind: ObstacleKind = rand::random();
         let amount: u32 = rand::thread_rng().gen_range(1..4);
-        let mut rng: ThreadRng = rand::thread_rng();
+        let mut rng = rand::thread_rng();
 
         /* No caso de CactusSmall, um pequeno offset é utilizado no y pro cacto ficar no chão e não flutuando */
         let sprite_bundle = match obstacle_kind {
