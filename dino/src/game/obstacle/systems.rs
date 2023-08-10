@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-use rand::rngs::ThreadRng;
 use rand::Rng;
 
 use super::components::{Obstacle, ObstacleKind};
