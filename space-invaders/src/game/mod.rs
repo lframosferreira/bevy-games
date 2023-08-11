@@ -19,15 +19,18 @@ impl Plugin for GamePlugin {
             .add_systems(
                 Update,
                 (
+                    spawn_boss,
                     spawn_bullets,
                     spawn_lasers,
                     move_player,
                     move_bullets,
                     move_aliens,
                     move_lasers,
+                    move_boss,
                     collide_bullets_with_aliens,
                     collide_lasers_with_player,
                     collide_projectiles_with_barriers,
+                    collide_bullets_with_boss,
                 )
                     .run_if(in_state(AppState::InGame)),
             )
@@ -36,6 +39,7 @@ impl Plugin for GamePlugin {
                 (
                     despawn_bullets,
                     despawn_lasers,
+                    despawn_boss,
                     reset_score,
                     respawn_aliens,
                     respawn_barriers,

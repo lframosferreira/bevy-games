@@ -1,4 +1,4 @@
-use super::components::{Alien, AlienLaser, Barrier, HitPoints, Player, PlayerBullet, Stats};
+use super::components::{Alien, AlienLaser, Barrier, Boss, HitPoints, Player, PlayerBullet, Stats};
 use super::resources::{AlienDirection, Score};
 use super::{WINDOW_X, WINDOW_Y};
 use bevy::sprite::collide_aabb;
@@ -11,8 +11,10 @@ const PLAYER_HP: usize = 3;
 const PLAYER_Y_OFFSET: f32 = 100.;
 const ALIEN_POINTS: usize = 10;
 const ALIEN_LINE_OFFSET: f32 = 50.;
+const BOSS_POINTS: usize = 1000;
 const BARRIER_HP: usize = 10;
 const ENEMY_SHOOT_ODDS: f32 = 0.001;
+const BOSS_SPAWN_ODDS: f32 = 0.001;
 
 pub fn spawn_player(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>) {
     let window = window_query.get_single().unwrap();
@@ -211,7 +213,7 @@ pub fn collide_bullets_with_aliens(
 ) {
     for (bullet, bullet_entity, bullet_stats) in bullets_query.iter() {
         let bullet_translation = bullet.translation;
-        for (alien, entity, alien_stats) in aliens_query.iter() {
+        for (alien, alien_entity, alien_stats) in aliens_query.iter() {
             if collide_aabb::collide(
                 bullet_translation,
                 bullet_stats.size(),
@@ -220,7 +222,7 @@ pub fn collide_bullets_with_aliens(
             )
             .is_some()
             {
-                commands.entity(entity).despawn();
+                commands.entity(alien_entity).despawn();
                 commands.entity(bullet_entity).despawn();
                 score.increment(ALIEN_POINTS);
             }
@@ -355,6 +357,70 @@ pub fn collide_projectiles_with_barriers(
     }
 }
 
+pub fn spawn_boss(mut commands: Commands) {
+    if random::<f32>() < BOSS_SPAWN_ODDS {
+        let boss = Boss::default();
+        commands.spawn((
+            SpriteBundle {
+                sprite: Sprite {
+                    color: boss.stats.color(),
+                    custom_size: Some(boss.stats.size()),
+                    ..default()
+                },
+                transform: Transform::from_xyz(
+                    -boss.stats.width(),
+                    WINDOW_Y - boss.stats.height(),
+                    0.0,
+                ),
+                ..default()
+            },
+            boss,
+            boss.stats,
+        ));
+    }
+}
+
+pub fn move_boss(
+    mut boss_query: Query<(&mut Transform, Entity, &Stats), With<Boss>>,
+    time: Res<Time>,
+    mut commands: Commands,
+) {
+    for (mut transform, entity, stats) in boss_query.iter_mut() {
+        let translation = &mut transform.translation;
+        let delta = stats.speed() * time.delta_seconds();
+        if translation.x + delta <= WINDOW_X + stats.width() / 2. {
+            translation.x += delta;
+        } else {
+            commands.entity(entity).despawn();
+        }
+    }
+}
+
+pub fn collide_bullets_with_boss(
+    bullets_query: Query<(&Transform, Entity, &Stats), With<PlayerBullet>>,
+    boss_query: Query<(&Transform, Entity, &Stats), With<Boss>>,
+    mut commands: Commands,
+    mut score: ResMut<Score>,
+) {
+    for (bullet, bullet_entity, bullet_stats) in bullets_query.iter() {
+        let bullet_translation = bullet.translation;
+        for (alien, boss_entity, alien_stats) in boss_query.iter() {
+            if collide_aabb::collide(
+                bullet_translation,
+                bullet_stats.size(),
+                alien.translation,
+                alien_stats.size(),
+            )
+            .is_some()
+            {
+                commands.entity(boss_entity).despawn();
+                commands.entity(bullet_entity).despawn();
+                score.increment(BOSS_POINTS);
+            }
+        }
+    }
+}
+
 pub fn respawn_player(
     mut commands: Commands,
     window_query: Query<&Window, With<PrimaryWindow>>,
@@ -388,6 +454,12 @@ pub fn despawn_bullets(mut commands: Commands, bullets_query: Query<Entity, With
 
 pub fn despawn_lasers(mut commands: Commands, lasers_query: Query<Entity, With<AlienLaser>>) {
     for entity in lasers_query.iter() {
+        commands.entity(entity).despawn();
+    }
+}
+
+pub fn despawn_boss(mut commands: Commands, boss_query: Query<Entity, With<Boss>>) {
+    for entity in boss_query.iter() {
         commands.entity(entity).despawn();
     }
 }
