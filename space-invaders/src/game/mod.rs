@@ -15,7 +15,7 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Score>()
-            .add_systems(Startup, (spawn_player, spawn_aliens))
+            .add_systems(Startup, (spawn_player, spawn_aliens, spawn_barriers))
             .add_systems(
                 Update,
                 (
@@ -27,6 +27,7 @@ impl Plugin for GamePlugin {
                     move_lasers,
                     collide_bullets_with_aliens,
                     collide_lasers_with_player,
+                    collide_projectiles_with_barriers,
                 )
                     .run_if(in_state(AppState::InGame)),
             )
@@ -37,6 +38,7 @@ impl Plugin for GamePlugin {
                     despawn_lasers,
                     reset_score,
                     respawn_aliens,
+                    respawn_barriers,
                     respawn_player,
                 ),
             );

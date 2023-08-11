@@ -1,4 +1,4 @@
-use super::components::{Alien, AlienLaser, HitPoints, Player, PlayerBullet};
+use super::components::{Alien, AlienLaser, Barrier, HitPoints, Player, PlayerBullet, Stats};
 use super::resources::{AlienDirection, Score};
 use super::{WINDOW_X, WINDOW_Y};
 use bevy::sprite::collide_aabb;
@@ -7,54 +7,47 @@ use common::events::EndGame;
 use common::AppState;
 use rand::random;
 
-const PLAYER_WIDTH: f32 = 40.;
-const PLAYER_HEIGHT: f32 = 20.;
 const PLAYER_HP: usize = 3;
 const PLAYER_Y_OFFSET: f32 = 100.;
-const ALIEN_WIDTH: f32 = 30.;
-const ALIEN_HEIGHT: f32 = 30.;
-const ALIEN_SIZE: Vec2 = Vec2::new(ALIEN_WIDTH, ALIEN_HEIGHT);
-const ALIEN_SPEED: f32 = 25. * 40.;
 const ALIEN_POINTS: usize = 10;
 const ALIEN_LINE_OFFSET: f32 = 50.;
-const BULLET_LENGTH: f32 = 5.;
-const BULLET_SIZE: Vec2 = Vec2::new(BULLET_LENGTH, BULLET_LENGTH);
-const LASER_LENGTH: f32 = 8.;
-const LASER_SIZE: Vec2 = Vec2::new(LASER_LENGTH, LASER_LENGTH);
+const BARRIER_HP: usize = 10;
 const ENEMY_SHOOT_ODDS: f32 = 0.001;
 
 pub fn spawn_player(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>) {
     let window = window_query.get_single().unwrap();
+    let player = Player::default();
     commands.spawn((
         SpriteBundle {
             sprite: Sprite {
-                color: Color::GREEN,
-                custom_size: Some(Vec2::new(PLAYER_WIDTH, PLAYER_HEIGHT)),
+                color: player.stats.color(),
+                custom_size: Some(player.stats.size()),
                 ..default()
             },
             transform: Transform::from_xyz(window.width() / 2., PLAYER_Y_OFFSET, 0.0),
             ..default()
         },
-        Player,
+        player,
+        player.stats,
         HitPoints::new(PLAYER_HP),
     ));
 }
 
 pub fn move_player(
-    mut player_query: Query<&mut Transform, With<Player>>,
+    mut player_query: Query<(&mut Transform, &Stats), With<Player>>,
     keyboard_input: Res<Input<KeyCode>>,
     time: Res<Time>,
 ) {
-    const PLAYER_SPEED: f32 = 250.;
-    if let Ok(mut transform) = player_query.get_single_mut() {
+    if let Ok(player) = player_query.get_single_mut() {
+        let (mut transform, stats) = player;
         let translation = &mut transform.translation;
-        let delta = PLAYER_SPEED * time.delta_seconds();
+        let delta = stats.speed() * time.delta_seconds();
         if keyboard_input.pressed(KeyCode::Right)
-            && translation.x + delta < WINDOW_X - PLAYER_WIDTH / 2.
+            && translation.x + delta < WINDOW_X - stats.width() / 2.
         {
             translation.x += delta;
         }
-        if keyboard_input.pressed(KeyCode::Left) && translation.x - delta > PLAYER_WIDTH / 2. {
+        if keyboard_input.pressed(KeyCode::Left) && translation.x - delta > stats.width() / 2. {
             translation.x -= delta;
         }
     }
@@ -62,27 +55,30 @@ pub fn move_player(
 
 pub fn spawn_bullets(
     mut commands: Commands,
-    player_query: Query<&Transform, With<Player>>,
+    player_query: Query<(&Transform, &Stats), With<Player>>,
     keyboard_input: Res<Input<KeyCode>>,
 ) {
     if let Ok(player) = player_query.get_single() {
-        let translation = player.translation;
+        let (transform, stats) = player;
+        let translation = transform.translation;
         if keyboard_input.just_pressed(KeyCode::Space) {
+            let bullet = PlayerBullet::default();
             commands.spawn((
                 SpriteBundle {
                     sprite: Sprite {
-                        color: Color::GREEN,
-                        custom_size: Some(BULLET_SIZE),
+                        color: bullet.stats.color(),
+                        custom_size: Some(bullet.stats.size()),
                         ..default()
                     },
                     transform: Transform::from_xyz(
                         translation.x,
-                        translation.y + PLAYER_HEIGHT / 2. + BULLET_LENGTH,
+                        translation.y + stats.height() / 2. + bullet.stats.height(),
                         0.0,
                     ),
                     ..default()
                 },
-                PlayerBullet,
+                bullet,
+                bullet.stats,
             ));
         }
     }
@@ -90,13 +86,12 @@ pub fn spawn_bullets(
 
 pub fn move_bullets(
     mut commands: Commands,
-    mut bullets_query: Query<(Entity, &mut Transform), With<PlayerBullet>>,
+    mut bullets_query: Query<(Entity, &mut Transform, &Stats), With<PlayerBullet>>,
     time: Res<Time>,
 ) {
-    const BULLET_SPEED: f32 = 250.;
-    for (entity, mut bullet) in bullets_query.iter_mut() {
-        let translation = &mut bullet.translation;
-        let delta = BULLET_SPEED * time.delta_seconds();
+    for (entity, mut transform, stats) in bullets_query.iter_mut() {
+        let translation = &mut transform.translation;
+        let delta = stats.speed() * time.delta_seconds();
         if translation.y + delta < WINDOW_Y {
             translation.y += delta;
         } else {
@@ -112,11 +107,12 @@ pub fn spawn_aliens(mut commands: Commands) {
     const COLUMN_OFFSET: f32 = 50.;
     for i in 0..4 {
         for j in 0..=10 {
+            let alien = Alien::default();
             commands.spawn((
                 SpriteBundle {
                     sprite: Sprite {
-                        color: Color::RED,
-                        custom_size: Some(Vec2::new(ALIEN_WIDTH, ALIEN_HEIGHT)),
+                        color: alien.stats.color(),
+                        custom_size: Some(alien.stats.size()),
                         ..default()
                     },
                     transform: Transform::from_xyz(
@@ -126,14 +122,15 @@ pub fn spawn_aliens(mut commands: Commands) {
                     ),
                     ..default()
                 },
-                Alien,
+                alien,
+                alien.stats,
             ));
         }
     }
 }
 
 pub fn move_aliens(
-    mut aliens_query: Query<&mut Transform, With<Alien>>,
+    mut aliens_query: Query<(&mut Transform, &Stats), With<Alien>>,
     mut direction: ResMut<AlienDirection>,
     mut player_query: Query<&mut HitPoints, With<Player>>,
     time: Res<Time>,
@@ -149,13 +146,17 @@ pub fn move_aliens(
         return;
     }
     let multiplier = aliens_query.iter().len() as f32;
-    let mut x: Vec<f32> = Vec::new();
-    for alien in aliens_query.iter() {
-        x.push(alien.translation.x);
+    let mut x_pos: Vec<f32> = Vec::new();
+    let mut speeds: Vec<f32> = Vec::new();
+    let mut widths: Vec<f32> = Vec::new();
+    for (transform, stats) in aliens_query.iter() {
+        x_pos.push(transform.translation.x);
+        speeds.push(stats.speed());
+        widths.push(stats.width());
     }
-    let delta = ALIEN_SPEED / multiplier * time.delta_seconds();
-    if should_aliens_move_horizontally(&x, &direction, &delta) {
-        for mut alien in aliens_query.iter_mut() {
+    if should_aliens_move_horizontally(&x_pos, &speeds, &widths, &direction, &time) {
+        for (mut alien, stats) in aliens_query.iter_mut() {
+            let delta = stats.speed() / multiplier * time.delta_seconds();
             let translation = &mut alien.translation;
             match *direction {
                 AlienDirection::Right => translation.x += delta,
@@ -163,7 +164,7 @@ pub fn move_aliens(
             }
         }
     } else {
-        for mut alien in aliens_query.iter_mut() {
+        for (mut alien, _) in aliens_query.iter_mut() {
             let translation = &mut alien.translation;
             translation.y -= ALIEN_LINE_OFFSET;
             if translation.y <= PLAYER_Y_OFFSET {
@@ -178,19 +179,22 @@ pub fn move_aliens(
 }
 
 fn should_aliens_move_horizontally(
-    vec: &Vec<f32>,
+    x_pos: &[f32],
+    speeds: &[f32],
+    widths: &[f32],
     direction: &AlienDirection,
-    delta: &f32,
+    time: &Res<Time>,
 ) -> bool {
-    for x in vec {
+    for (i, x) in x_pos.iter().enumerate() {
+        let delta = speeds[i] * time.delta_seconds();
         match direction {
             AlienDirection::Right => {
-                if x + delta > WINDOW_X - ALIEN_WIDTH / 2. {
+                if x + delta > WINDOW_X - widths[i] / 2. {
                     return false;
                 }
             }
             AlienDirection::Left => {
-                if x - delta < ALIEN_WIDTH / 2. {
+                if x - delta < widths[i] / 2. {
                     return false;
                 }
             }
@@ -201,18 +205,18 @@ fn should_aliens_move_horizontally(
 
 pub fn collide_bullets_with_aliens(
     mut commands: Commands,
-    bullets_query: Query<(&Transform, Entity), With<PlayerBullet>>,
-    aliens_query: Query<(&Transform, Entity), With<Alien>>,
+    bullets_query: Query<(&Transform, Entity, &Stats), With<PlayerBullet>>,
+    aliens_query: Query<(&Transform, Entity, &Stats), With<Alien>>,
     mut score: ResMut<Score>,
 ) {
-    for (bullet, bullet_entity) in bullets_query.iter() {
+    for (bullet, bullet_entity, bullet_stats) in bullets_query.iter() {
         let bullet_translation = bullet.translation;
-        for (alien, entity) in aliens_query.iter() {
+        for (alien, entity, alien_stats) in aliens_query.iter() {
             if collide_aabb::collide(
                 bullet_translation,
-                BULLET_SIZE,
+                bullet_stats.size(),
                 alien.translation,
-                ALIEN_SIZE,
+                alien_stats.size(),
             )
             .is_some()
             {
@@ -224,25 +228,30 @@ pub fn collide_bullets_with_aliens(
     }
 }
 
-pub fn spawn_lasers(mut commands: Commands, aliens_query: Query<&Transform, With<Alien>>) {
-    for alien in aliens_query.iter() {
-        let translation = alien.translation;
+pub fn spawn_lasers(
+    mut commands: Commands,
+    aliens_query: Query<(&Transform, &Stats), With<Alien>>,
+) {
+    for (transform, stats) in aliens_query.iter() {
+        let translation = transform.translation;
         if random::<f32>() < ENEMY_SHOOT_ODDS {
+            let laser = AlienLaser::default();
             commands.spawn((
                 SpriteBundle {
                     sprite: Sprite {
-                        color: Color::RED,
-                        custom_size: Some(LASER_SIZE),
+                        color: laser.stats.color(),
+                        custom_size: Some(laser.stats.size()),
                         ..default()
                     },
                     transform: Transform::from_xyz(
                         translation.x,
-                        translation.y - ALIEN_HEIGHT / 2. - LASER_LENGTH,
+                        translation.y - stats.height() / 2. - laser.stats.height(),
                         0.0,
                     ),
                     ..default()
                 },
-                AlienLaser,
+                laser,
+                laser.stats,
             ));
         }
     }
@@ -250,13 +259,12 @@ pub fn spawn_lasers(mut commands: Commands, aliens_query: Query<&Transform, With
 
 pub fn move_lasers(
     mut commands: Commands,
-    mut laser_query: Query<(Entity, &mut Transform), With<AlienLaser>>,
+    mut laser_query: Query<(Entity, &mut Transform, &Stats), With<AlienLaser>>,
     time: Res<Time>,
 ) {
-    const LASER_SPEED: f32 = 250.;
-    for (entity, mut laser) in laser_query.iter_mut() {
+    for (entity, mut laser, stats) in laser_query.iter_mut() {
         let translation = &mut laser.translation;
-        let delta = LASER_SPEED * time.delta_seconds();
+        let delta = stats.speed() * time.delta_seconds();
         if translation.y - delta > 0. {
             translation.y -= delta;
         } else {
@@ -266,20 +274,20 @@ pub fn move_lasers(
 }
 
 pub fn collide_lasers_with_player(
-    lasers_query: Query<(&Transform, Entity), With<AlienLaser>>,
-    mut player_query: Query<(&Transform, &mut HitPoints), With<Player>>,
+    lasers_query: Query<(&Transform, Entity, &Stats), With<AlienLaser>>,
+    mut player_query: Query<(&Transform, &mut HitPoints, &Stats), With<Player>>,
     mut commands: Commands,
     mut game_over_event_writer: EventWriter<EndGame>,
     score: Res<Score>,
 ) {
-    for (bullet, entity) in lasers_query.iter() {
-        let bullet_translation = bullet.translation;
-        for (player, mut hp) in player_query.iter_mut() {
+    for (laser, entity, laser_stats) in lasers_query.iter() {
+        let laser_translation = laser.translation;
+        for (player, mut hp, player_stats) in player_query.iter_mut() {
             if collide_aabb::collide(
-                bullet_translation,
-                BULLET_SIZE,
+                laser_translation,
+                laser_stats.size(),
                 player.translation,
-                ALIEN_SIZE,
+                player_stats.size(),
             )
             .is_some()
             {
@@ -290,6 +298,57 @@ pub fn collide_lasers_with_player(
                     game_over_event_writer.send(EndGame {
                         score: score.score(),
                     });
+                }
+            }
+        }
+    }
+}
+
+pub fn spawn_barriers(mut commands: Commands) {
+    const X_OFFSET: f32 = 100.;
+    const Y_OFFSET: f32 = PLAYER_Y_OFFSET + 90.;
+    const COLUMN_OFFSET: f32 = 130.;
+    for i in 0..4 {
+        let barrier = Barrier::default();
+        commands.spawn((
+            SpriteBundle {
+                sprite: Sprite {
+                    color: barrier.stats.color(),
+                    custom_size: Some(barrier.stats.size()),
+                    ..default()
+                },
+                transform: Transform::from_xyz(X_OFFSET + COLUMN_OFFSET * i as f32, Y_OFFSET, 0.0),
+                ..default()
+            },
+            barrier,
+            barrier.stats,
+            HitPoints::new(BARRIER_HP),
+        ));
+    }
+}
+
+type ProjectileQuery = Or<(With<PlayerBullet>, With<AlienLaser>)>;
+
+pub fn collide_projectiles_with_barriers(
+    projectile_query: Query<(&Transform, Entity, &Stats), ProjectileQuery>,
+    mut barriers_query: Query<(&Transform, &mut HitPoints, Entity, &Stats), With<Barrier>>,
+    mut commands: Commands,
+) {
+    for (transform, projectile_entity, projectile_stats) in projectile_query.iter() {
+        let translation = transform.translation;
+        for (barrier, mut hp, entity, barrier_stats) in barriers_query.iter_mut() {
+            if collide_aabb::collide(
+                translation,
+                projectile_stats.size(),
+                barrier.translation,
+                barrier_stats.size(),
+            )
+            .is_some()
+            {
+                commands.entity(projectile_entity).despawn();
+                hp.hit();
+                if hp.points() == 0 {
+                    commands.entity(entity).despawn();
                 }
             }
         }
@@ -314,6 +373,13 @@ pub fn respawn_aliens(mut commands: Commands, aliens_query: Query<Entity, With<A
     spawn_aliens(commands);
 }
 
+pub fn respawn_barriers(mut commands: Commands, barriers_query: Query<Entity, With<Barrier>>) {
+    for entity in barriers_query.iter() {
+        commands.entity(entity).despawn();
+    }
+    spawn_barriers(commands);
+}
+
 pub fn despawn_bullets(mut commands: Commands, bullets_query: Query<Entity, With<PlayerBullet>>) {
     for entity in bullets_query.iter() {
         commands.entity(entity).despawn();
@@ -329,9 +395,3 @@ pub fn despawn_lasers(mut commands: Commands, lasers_query: Query<Entity, With<A
 pub fn reset_score(mut score: ResMut<Score>) {
     score.reset();
 }
-
-// TODO HUD with Score and Lives
-// TODO Barrier
-// TODO Motherhip
-// TODO Split in modules
-// TODO PowerUps?
