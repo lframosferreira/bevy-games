@@ -1,23 +1,127 @@
-use super::components::{Alien, AlienLaser, Barrier, Boss, HitPoints, Player, PlayerBullet, Stats};
-use super::resources::{AlienDirection, Score};
+use super::components::{
+    Alien, AlienLaser, Barrier, Boss, HitPoints, LivesHUD, Player, PlayerBullet, ScoreHUD, Stats,
+};
+use super::resources::{AlienDirection, Lives, Score};
 use super::{WINDOW_X, WINDOW_Y};
+use bevy::prelude::*;
 use bevy::sprite::collide_aabb;
-use bevy::{prelude::*, window::PrimaryWindow};
 use common::events::EndGame;
 use common::AppState;
 use rand::random;
 
-const PLAYER_HP: usize = 3;
+pub const PLAYER_HP: usize = 3;
 const PLAYER_Y_OFFSET: f32 = 100.;
+const LIVES_X_OFFSET: f32 = 30.;
+const LIVES_COL_OFFSET: f32 = 50.;
 const ALIEN_POINTS: usize = 10;
 const ALIEN_LINE_OFFSET: f32 = 50.;
 const BOSS_POINTS: usize = 1000;
 const BARRIER_HP: usize = 10;
 const ENEMY_SHOOT_ODDS: f32 = 0.001;
 const BOSS_SPAWN_ODDS: f32 = 0.001;
+const FONT_SIZE: f32 = 40.;
 
-pub fn spawn_player(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>) {
-    let window = window_query.get_single().unwrap();
+pub fn spawn_score(mut commands: Commands, asset_server: Res<AssetServer>, score: Res<Score>) {
+    const X_OFFSET: f32 = 500.;
+    commands.spawn((
+        Text2dBundle {
+            text: Text::from_section(
+                format!("Score {:05}", score.score()),
+                TextStyle {
+                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                    font_size: FONT_SIZE,
+                    color: Color::WHITE,
+                },
+            )
+            .with_alignment(TextAlignment::Center),
+            transform: Transform::from_xyz(X_OFFSET, FONT_SIZE / 2., 0.),
+            ..default()
+        },
+        ScoreHUD,
+    ));
+}
+
+pub fn update_score(score: Res<Score>, mut score_hud_query: Query<&mut Text, With<ScoreHUD>>) {
+    if let Ok(mut text) = score_hud_query.get_single_mut() {
+        for section in &mut text.sections {
+            section.value = format!("Score {:05}", score.score());
+        }
+    }
+}
+
+pub fn spawn_lives_hud(mut commands: Commands) {
+    let player = Player::default();
+    let sprite = Sprite {
+        color: player.stats.color(),
+        custom_size: Some(player.stats.size()),
+        ..default()
+    };
+    for i in 0..PLAYER_HP {
+        commands.spawn((
+            SpriteBundle {
+                sprite: sprite.clone(),
+                transform: Transform::from_xyz(
+                    LIVES_X_OFFSET + i as f32 * LIVES_COL_OFFSET,
+                    FONT_SIZE / 2.,
+                    0.0,
+                ),
+                ..default()
+            },
+            LivesHUD,
+        ));
+    }
+}
+
+pub fn update_lives(
+    lives: Option<Res<Lives>>,
+    score_hud_query: Query<Entity, With<LivesHUD>>,
+    mut commands: Commands,
+    mut game_over_event_writer: EventWriter<EndGame>,
+    score: Res<Score>,
+) {
+    if let Some(lives) = lives {
+        if lives.is_changed() && !lives.is_added() {
+            let len = score_hud_query.iter().len();
+            let lives = lives.get();
+            // A gente remove as sprites até ficar com 0,
+            // Ao passo que na próxima remoção a gente dá o evento de game over
+            if len > lives {
+                if let Some(entity) = score_hud_query.iter().last() {
+                    commands.entity(entity).despawn();
+                }
+            } else if lives == 0 {
+                commands.insert_resource(NextState(Some(AppState::GameOver)));
+                game_over_event_writer.send(EndGame {
+                    score: score.score(),
+                });
+            // É importante checar se a variação é realmente 1 pois ao resetar o contador de vidas
+            // (isto é, mudar de 0 para 3), a variação é maior que 1 e não queremos spawnar um
+            // novo sprite porque o reset toma conta disso
+            } else if len + 1 == lives {
+                let player = Player::default();
+                let sprite = Sprite {
+                    color: player.stats.color(),
+                    custom_size: Some(player.stats.size()),
+                    ..default()
+                };
+                commands.spawn((
+                    SpriteBundle {
+                        sprite: sprite.clone(),
+                        transform: Transform::from_xyz(
+                            LIVES_X_OFFSET + len as f32 * LIVES_COL_OFFSET,
+                            FONT_SIZE / 2.,
+                            0.0,
+                        ),
+                        ..default()
+                    },
+                    LivesHUD,
+                ));
+            }
+        }
+    }
+}
+
+pub fn spawn_player(mut commands: Commands) {
     let player = Player::default();
     commands.spawn((
         SpriteBundle {
@@ -26,12 +130,11 @@ pub fn spawn_player(mut commands: Commands, window_query: Query<&Window, With<Pr
                 custom_size: Some(player.stats.size()),
                 ..default()
             },
-            transform: Transform::from_xyz(window.width() / 2., PLAYER_Y_OFFSET, 0.0),
+            transform: Transform::from_xyz(WINDOW_X / 2., PLAYER_Y_OFFSET, 0.0),
             ..default()
         },
         player,
         player.stats,
-        HitPoints::new(PLAYER_HP),
     ));
 }
 
@@ -134,17 +237,15 @@ pub fn spawn_aliens(mut commands: Commands) {
 pub fn move_aliens(
     mut aliens_query: Query<(&mut Transform, &Stats), With<Alien>>,
     mut direction: ResMut<AlienDirection>,
-    mut player_query: Query<&mut HitPoints, With<Player>>,
     time: Res<Time>,
     mut commands: Commands,
     mut game_over_event_writer: EventWriter<EndGame>,
     score: Res<Score>,
+    mut lives: ResMut<Lives>,
 ) {
     if aliens_query.is_empty() {
         spawn_aliens(commands);
-        for mut player in player_query.iter_mut() {
-            player.increment();
-        }
+        lives.increment();
         return;
     }
     let multiplier = aliens_query.iter().len() as f32;
@@ -277,14 +378,13 @@ pub fn move_lasers(
 
 pub fn collide_lasers_with_player(
     lasers_query: Query<(&Transform, Entity, &Stats), With<AlienLaser>>,
-    mut player_query: Query<(&Transform, &mut HitPoints, &Stats), With<Player>>,
+    player_query: Query<(&Transform, &Stats), With<Player>>,
     mut commands: Commands,
-    mut game_over_event_writer: EventWriter<EndGame>,
-    score: Res<Score>,
+    mut lives: ResMut<Lives>,
 ) {
     for (laser, entity, laser_stats) in lasers_query.iter() {
         let laser_translation = laser.translation;
-        for (player, mut hp, player_stats) in player_query.iter_mut() {
+        for (player, player_stats) in player_query.iter() {
             if collide_aabb::collide(
                 laser_translation,
                 laser_stats.size(),
@@ -293,23 +393,17 @@ pub fn collide_lasers_with_player(
             )
             .is_some()
             {
-                hp.hit();
+                lives.decrement();
                 commands.entity(entity).despawn();
-                if hp.points() == 0 {
-                    commands.insert_resource(NextState(Some(AppState::GameOver)));
-                    game_over_event_writer.send(EndGame {
-                        score: score.score(),
-                    });
-                }
             }
         }
     }
 }
 
 pub fn spawn_barriers(mut commands: Commands) {
-    const X_OFFSET: f32 = 100.;
-    const Y_OFFSET: f32 = PLAYER_Y_OFFSET + 90.;
-    const COLUMN_OFFSET: f32 = 130.;
+    const X_OFFSET: f32 = 120.;
+    const Y_OFFSET: f32 = PLAYER_Y_OFFSET + 100.;
+    const COLUMN_OFFSET: f32 = X_OFFSET;
     for i in 0..4 {
         let barrier = Barrier::default();
         commands.spawn((
@@ -421,14 +515,10 @@ pub fn collide_bullets_with_boss(
     }
 }
 
-pub fn respawn_player(
-    mut commands: Commands,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-    player_query: Query<Entity, With<Player>>,
-) {
+pub fn respawn_player(mut commands: Commands, player_query: Query<Entity, With<Player>>) {
     if let Ok(entity) = player_query.get_single() {
         commands.entity(entity).despawn();
-        spawn_player(commands, window_query);
+        spawn_player(commands);
     }
 }
 
@@ -466,4 +556,15 @@ pub fn despawn_boss(mut commands: Commands, boss_query: Query<Entity, With<Boss>
 
 pub fn reset_score(mut score: ResMut<Score>) {
     score.reset();
+}
+
+pub fn reset_lives(mut lives: ResMut<Lives>) {
+    lives.reset();
+}
+
+pub fn respawn_live_hud(mut commands: Commands, hud_query: Query<Entity, With<LivesHUD>>) {
+    for entity in hud_query.iter() {
+        commands.entity(entity).despawn();
+    }
+    spawn_lives_hud(commands);
 }

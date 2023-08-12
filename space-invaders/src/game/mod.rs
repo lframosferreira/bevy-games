@@ -4,6 +4,7 @@ mod systems;
 
 use bevy::prelude::*;
 use common::AppState;
+use resources::Lives;
 use resources::Score;
 use systems::*;
 
@@ -15,10 +16,22 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Score>()
-            .add_systems(Startup, (spawn_player, spawn_aliens, spawn_barriers))
+            .init_resource::<Lives>()
+            .add_systems(
+                Startup,
+                (
+                    spawn_player,
+                    spawn_aliens,
+                    spawn_barriers,
+                    spawn_score,
+                    spawn_lives_hud,
+                ),
+            )
             .add_systems(
                 Update,
                 (
+                    update_score,
+                    update_lives,
                     spawn_boss,
                     spawn_bullets,
                     spawn_lasers,
@@ -41,9 +54,11 @@ impl Plugin for GamePlugin {
                     despawn_lasers,
                     despawn_boss,
                     reset_score,
+                    reset_lives,
                     respawn_aliens,
                     respawn_barriers,
                     respawn_player,
+                    respawn_live_hud,
                 ),
             );
     }

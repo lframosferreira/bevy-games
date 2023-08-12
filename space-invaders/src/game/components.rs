@@ -4,7 +4,7 @@ const ALIEN_LENGTH: f32 = 30.;
 const ALIEN_SIZE: Vec2 = Vec2::new(ALIEN_LENGTH, ALIEN_LENGTH);
 const ALIEN_SPEED: f32 = 25. * 40.;
 const ALIEN_COLOR: Color = Color::RED;
-const BARRIER_LENGTH: f32 = 80.;
+const BARRIER_LENGTH: f32 = 70.;
 const BARRIER_SIZE: Vec2 = Vec2::new(BARRIER_LENGTH, BARRIER_LENGTH);
 const BARRIER_SPEED: f32 = 0.;
 const BARRIER_COLOR: Color = Color::GREEN;
@@ -183,11 +183,13 @@ impl HitPoints {
         self.0 -= 1
     }
 
-    pub fn increment(&mut self) {
-        self.0 += 1
-    }
-
     pub fn points(&self) -> usize {
         self.0
     }
 }
+
+#[derive(Component)]
+pub struct ScoreHUD;
+
+#[derive(Component)]
+pub struct LivesHUD;
