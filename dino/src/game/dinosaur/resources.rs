@@ -16,3 +16,8 @@ impl Default for DinoVerticalMovement {
         }
     }
 }
+
+#[derive(Resource, Default)]
+pub struct DinoDown {
+    pub is_down: bool,
+}
