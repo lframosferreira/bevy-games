@@ -9,6 +9,7 @@ members = [
     "snake-game",
     "tetris",
     "twenty-48",
+    "sliding-puzzle"
 ]
 
 [profile.dev]
