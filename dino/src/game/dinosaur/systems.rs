@@ -55,20 +55,25 @@ pub fn handle_collision(
 ) {
     if let Ok((dinosaur_image_handle, dinosaur_transform)) = dinosaur_query.get_single() {
         for (obstacle_image_handle, obstacle_transform) in obstacle_query.iter() {
-            let dinosaur_dimensions = assets.get(dinosaur_image_handle).unwrap().size();
-            let obstacle_dimensions = assets.get(obstacle_image_handle).unwrap().size();
-            if collide(
-                dinosaur_transform.translation,
-                dinosaur_dimensions,
-                obstacle_transform.translation,
-                obstacle_dimensions,
-            )
-            .is_some()
-            {
-                commands.insert_resource(NextState(Some(AppState::GameOver)));
-                game_over_event_writer.send(EndGame {
-                    score: score.value as usize,
-                });
+            if let (Some(dinosaur_image), Some(obstacle_image)) = (
+                assets.get(dinosaur_image_handle),
+                assets.get(obstacle_image_handle),
+            ) {
+                let dinosaur_dimensions = dinosaur_image.size();
+                let obstacle_dimensions = obstacle_image.size();
+                if collide(
+                    dinosaur_transform.translation,
+                    dinosaur_dimensions,
+                    obstacle_transform.translation,
+                    obstacle_dimensions,
+                )
+                .is_some()
+                {
+                    commands.insert_resource(NextState(Some(AppState::GameOver)));
+                    game_over_event_writer.send(EndGame {
+                        score: score.value as usize,
+                    });
+                }
             }
         }
     }

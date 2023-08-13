@@ -64,9 +64,11 @@ pub fn despawn_obstacles_out_of_screen(
     assets: Res<Assets<Image>>,
 ) {
     for (obstacle_handle_image, obstacle_transform, obstacle_entity) in obstacle_query.iter_mut() {
-        let obstacle_width: f32 = assets.get(obstacle_handle_image).unwrap().size().x;
-        if obstacle_transform.translation.x < -obstacle_width / 2.0 {
-            commands.entity(obstacle_entity).despawn();
+        if let Some(obstacle_image) = assets.get(obstacle_handle_image) {
+            let obstacle_width: f32 = obstacle_image.size().x;
+            if obstacle_transform.translation.x < -obstacle_width / 2.0 {
+                commands.entity(obstacle_entity).despawn();
+            }
         }
     }
 }
