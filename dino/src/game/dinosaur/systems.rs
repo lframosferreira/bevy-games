@@ -118,3 +118,7 @@ pub fn set_dinosaur_in_initial_position(
         });
     }
 }
+
+pub fn reset_vertical_movement(mut dino_vertical_movement: ResMut<DinoVerticalMovement>) {
+    *dino_vertical_movement = DinoVerticalMovement::default();
+}

@@ -28,6 +28,9 @@ impl Plugin for DinosaurPlugin {
                 (handle_jump, handle_collision, dinosaur_down_movement)
                     .run_if(in_state(AppState::InGame)),
             )
-            .add_systems(OnExit(AppState::GameOver), set_dinosaur_in_initial_position);
+            .add_systems(
+                OnExit(AppState::GameOver),
+                (set_dinosaur_in_initial_position, reset_vertical_movement),
+            );
     }
 }
