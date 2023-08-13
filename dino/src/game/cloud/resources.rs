@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-pub const CLOUD_SPAWN_TIME: f32 = 1.5;
+const CLOUD_SPAWN_TIME: f32 = 1.5;
 
 #[derive(Resource)]
 pub struct CloudSpawnTimer {

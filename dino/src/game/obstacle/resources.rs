@@ -1,6 +1,5 @@
-use bevy::prelude::*;
-
 use super::OBSTACLE_INITIAL_SPEED;
+use bevy::prelude::*;
 
 pub const OBSTACLE_SPAWN_TIME: f32 = 1.5;
 

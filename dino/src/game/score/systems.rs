@@ -41,7 +41,7 @@ pub fn spawn_score_text(
             transform: Transform::from_xyz(window.width() - 80.0, window.height() - 20.0, 0.0),
             ..default()
         },
-        ScoreText::default(),
+        ScoreText,
     ));
 }
 
