@@ -30,7 +30,11 @@ impl Plugin for DinosaurPlugin {
             )
             .add_systems(
                 OnExit(AppState::GameOver),
-                (set_dinosaur_in_initial_position, reset_vertical_movement),
+                (
+                    set_dinosaur_in_initial_position,
+                    reset_vertical_movement,
+                    reset_down,
+                ),
             );
     }
 }
