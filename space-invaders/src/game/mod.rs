@@ -4,22 +4,22 @@ mod boss;
 mod bullet;
 mod components;
 mod laser;
+mod lives;
 mod player;
-mod resources;
+mod score;
 mod systems;
 
 use alien::AlienPlugin;
 use barrier::BarrierPlugin;
 use bevy::prelude::*;
 use boss::BossPlugin;
+use bullet::BulletPlugin;
 use common::AppState;
 use laser::LaserPlugin;
+use lives::LivesPlugin;
 use player::PlayerPlugin;
-use resources::Lives;
-use resources::Score;
+use score::ScorePlugin;
 use systems::*;
-
-use self::bullet::BulletPlugin;
 
 pub const WINDOW_X: f32 = 600.0;
 pub const WINDOW_Y: f32 = 800.0;
@@ -28,9 +28,7 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<Score>()
-            .init_resource::<Lives>()
-            .add_systems(Startup, (spawn_score, spawn_lives_hud))
+        app.add_systems(Startup, (spawn_score, spawn_lives_hud))
             .add_systems(
                 Update,
                 (
@@ -50,10 +48,9 @@ impl Plugin for GamePlugin {
                 PlayerPlugin,
                 BarrierPlugin,
                 BulletPlugin,
+                ScorePlugin,
+                LivesPlugin,
             ))
-            .add_systems(
-                OnExit(AppState::GameOver),
-                (reset_score, reset_lives, respawn_live_hud),
-            );
+            .add_systems(OnExit(AppState::GameOver), respawn_live_hud);
     }
 }
