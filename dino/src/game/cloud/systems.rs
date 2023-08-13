@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use rand::prelude::*;
 
-pub const CLOUD_SPEED: f32 = 450.0;
+const CLOUD_SPEED: f32 = 450.0;
 
 pub fn tick_cloud_spawn_timer(mut cloud_spawn_timer: ResMut<CloudSpawnTimer>, time: Res<Time>) {
     cloud_spawn_timer.timer.tick(time.delta());
