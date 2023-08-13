@@ -41,11 +41,7 @@ impl CommonPlugin {
 impl Plugin for CommonPlugin {
     fn build(&self, app: &mut App) {
         if self.is_background_light {
-            app.add_systems(
-                Update,
-                CommonPlugin::set_text_dark
-                    .run_if(in_state(AppState::Pause).or_else(in_state(AppState::GameOver))),
-            );
+            app.add_systems(Update, CommonPlugin::set_text_dark);
         }
         app.add_event::<EndGame>()
             .add_state::<AppState>()
