@@ -1,15 +1,14 @@
-use bevy::prelude::*;
-use common::*;
-
-pub const OBSTACLE_INITIAL_SPEED: f32 = 600.0;
-pub const OBSTACLE_SPEED_INCREASE_RATE: f32 = 100.0;
-
 pub mod components;
 pub mod resources;
-pub mod systems;
+mod systems;
 
-use self::resources::{ObstacleSpawnTimer, ObstacleSpeed};
-use self::systems::*;
+use bevy::prelude::*;
+use common::*;
+use resources::{ObstacleSpawnTimer, ObstacleSpeed};
+use systems::*;
+
+const OBSTACLE_INITIAL_SPEED: f32 = 600.0;
+const OBSTACLE_SPEED_INCREASE_RATE: f32 = 100.0;
 
 pub struct ObstaclePlugin;
 

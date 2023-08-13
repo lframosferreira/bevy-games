@@ -1,16 +1,14 @@
-use bevy::prelude::*;
-use bevy::sprite::collide_aabb::collide;
-
-use crate::game::obstacle::components::Obstacle;
-use crate::game::score::resources::Score;
-use common::events::EndGame;
-use common::AppState;
-
 use super::components::Dinosaur;
 use super::resources::{DinoDown, DinoVerticalMovement};
 use super::{
     DINO_DOWN_Y_POS, DINO_INITIAL_VERTICAL_SPEED, DINO_INITIAL_Y_POS, DINO_X_POS, GRAVITY,
 };
+use crate::game::obstacle::components::Obstacle;
+use crate::game::score::resources::Score;
+use bevy::prelude::*;
+use bevy::sprite::collide_aabb::collide;
+use common::events::EndGame;
+use common::AppState;
 
 pub fn spawn_dinosaur(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
@@ -114,7 +112,7 @@ pub fn set_dinosaur_in_initial_position(
     if let Ok((mut dinosaur_transform, dinosaur_entity)) = dinosaur_query.get_single_mut() {
         dinosaur_transform.translation.y = DINO_INITIAL_Y_POS;
         commands.entity(dinosaur_entity).insert(SpriteBundle {
-            transform: dinosaur_transform.clone(),
+            transform: *dinosaur_transform,
             texture: asset_server.load("sprites/dino/dino_1.png"),
             ..default()
         });

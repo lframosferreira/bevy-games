@@ -1,11 +1,10 @@
-use bevy::prelude::*;
-
 mod cloud;
-pub mod dinosaur;
+mod dinosaur;
 mod floor;
-pub mod obstacle;
-pub mod score;
+mod obstacle;
+mod score;
 
+use bevy::prelude::*;
 use cloud::CloudPlugin;
 use dinosaur::DinosaurPlugin;
 use floor::FloorPlugin;
