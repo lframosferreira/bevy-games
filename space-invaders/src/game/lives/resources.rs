@@ -1,6 +1,5 @@
+use super::LIVES;
 use bevy::prelude::Resource;
-
-pub const LIVES: usize = 3;
 
 #[derive(Resource)]
 pub struct Lives(usize);

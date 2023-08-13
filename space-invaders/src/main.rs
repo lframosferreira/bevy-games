@@ -1,8 +1,10 @@
 mod game;
+mod hud;
 
 use bevy::prelude::*;
 use common::CommonPlugin;
 use game::{GamePlugin, WINDOW_X, WINDOW_Y};
+use hud::HUDPlugin;
 
 fn main() {
     App::new()
@@ -16,7 +18,6 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugins(CommonPlugin)
-        .add_plugins(GamePlugin)
+        .add_plugins((CommonPlugin, GamePlugin, HUDPlugin))
         .run()
 }

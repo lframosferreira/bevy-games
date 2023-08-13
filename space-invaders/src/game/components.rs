@@ -45,16 +45,12 @@ impl HitPoints {
     }
 
     pub fn hit(&mut self) {
-        self.0 -= 1
+        if self.0 > 0 {
+            self.0 -= 1
+        }
     }
 
     pub fn points(&self) -> usize {
         self.0
     }
 }
-
-#[derive(Component)]
-pub struct ScoreHUD;
-
-#[derive(Component)]
-pub struct LivesHUD;
