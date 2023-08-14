@@ -6,7 +6,7 @@ members = [
     "dino",
     "flappy",
     "inkspill",
-    "snake-game",
+    "snake",
     "space-invaders",
     "tetris",
     "twenty-48",
