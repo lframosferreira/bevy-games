@@ -1,5 +1,46 @@
 body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  background-color: #313244;
+}
+
+body,
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+  padding: 0;
+}
+
+.header, .footer {
+  background-color: #1e1e2e;
+  color: #cdd6f4;
+}
+
+.header {
+  padding: 20px;
+}
+
+.nav {
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.nav a {
+  color: #cdd6f4;
+  font-size: 20px;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  padding: 10px;
+}
+
+.nav a:hover {
+  color: #f9e2af;
+}
+
+.footer {
+  height: 5%;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
 }
