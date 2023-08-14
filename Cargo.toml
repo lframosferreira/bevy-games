@@ -1,0 +1,23 @@
+[workspace]
+resolver = "2"
+
+members = [
+    "common",
+    "dino",
+    "flappy",
+    "inkspill",
+    "sliding-puzzle",
+    "snake",
+    "space-invaders",
+    "tetris",
+    "twenty-48",
+]
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+opt-level = 'z'
