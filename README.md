@@ -8,11 +8,14 @@ Inspired by [python-games](https://inventwithpython.com/pygame/)
 
 - Snake
 - InkSpill
+- Chrome Dinosaur
+- 2048
+- Flappy Bird
+- Space Invaders
 
 ## Current work
 
-- Chrome dinosaur game
-- Flappy Bird
+- Sliding Puzzle
 
 ## Future
 
