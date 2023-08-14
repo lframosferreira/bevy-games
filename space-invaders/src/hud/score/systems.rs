@@ -2,12 +2,12 @@ use super::components::ScoreHUD;
 use crate::{game::Score, hud::FONT_SIZE};
 use bevy::prelude::*;
 
-pub fn spawn_score_hud(mut commands: Commands, asset_server: Res<AssetServer>, score: Res<Score>) {
+pub fn spawn_score_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
     const X_OFFSET: f32 = 500.;
     commands.spawn((
         Text2dBundle {
             text: Text::from_section(
-                format!("Score {:05}", score.score()),
+                "Score 00000",
                 TextStyle {
                     font: asset_server.load("fonts/FiraSans-Bold.ttf"),
                     font_size: FONT_SIZE,
@@ -25,7 +25,7 @@ pub fn spawn_score_hud(mut commands: Commands, asset_server: Res<AssetServer>, s
 pub fn update_score_hud(score: Res<Score>, mut score_hud_query: Query<&mut Text, With<ScoreHUD>>) {
     if let Ok(mut text) = score_hud_query.get_single_mut() {
         for section in &mut text.sections {
-            section.value = format!("Score {:05}", score.score());
+            section.value = format!("Score {:0>5}", score.score());
         }
     }
 }

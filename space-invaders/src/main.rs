@@ -18,6 +18,6 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugins((CommonPlugin, GamePlugin, HUDPlugin))
+        .add_plugins((CommonPlugin::default(), GamePlugin, HUDPlugin))
         .run()
 }
