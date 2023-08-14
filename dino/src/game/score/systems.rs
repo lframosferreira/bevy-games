@@ -31,14 +31,14 @@ pub fn spawn_score_text(
     commands.spawn((
         Text2dBundle {
             text: Text::from_section(
-                "Score: 00000",
+                "Score 00000",
                 TextStyle {
                     color: Color::WHITE,
                     font: asset_server.load("fonts/FiraSans-Bold.ttf"),
                     font_size: 20.0,
                 },
             ),
-            transform: Transform::from_xyz(window.width() - 80.0, window.height() - 20.0, 0.0),
+            transform: Transform::from_xyz(window.width() - 60.0, window.height() - 20.0, 0.0),
             ..default()
         },
         ScoreText,
@@ -46,25 +46,12 @@ pub fn spawn_score_text(
 }
 
 pub fn update_score_text(
-    mut commands: Commands,
-    score_text_query: Query<Entity, With<ScoreText>>,
+    mut score_text_query: Query<&mut Text, With<ScoreText>>,
     score: Res<Score>,
-    asset_server: Res<AssetServer>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
-    let window: &Window = window_query.get_single().unwrap();
-    if let Ok(score_text_entity) = score_text_query.get_single() {
-        commands.entity(score_text_entity).insert(Text2dBundle {
-            text: Text::from_section(
-                format!("Score: {:0>5}", score.value.to_string()),
-                TextStyle {
-                    color: Color::WHITE,
-                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                    font_size: 20.0,
-                },
-            ),
-            transform: Transform::from_xyz(window.width() - 80.0, window.height() - 20.0, 0.0),
-            ..default()
-        });
+    if let Ok(mut text) = score_text_query.get_single_mut() {
+        for section in &mut text.sections {
+            section.value = format!("Score {:0>5}", score.value);
+        }
     }
 }
