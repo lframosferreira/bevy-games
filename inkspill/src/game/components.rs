@@ -19,4 +19,4 @@ impl Block {
 }
 
 #[derive(Component)]
-pub struct Heart(pub usize);
+pub struct Heart();

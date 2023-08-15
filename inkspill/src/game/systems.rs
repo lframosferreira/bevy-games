@@ -1,5 +1,6 @@
 use super::{
     components::{Block, Heart},
+    resources::Lives,
     BLOCK_SIZE, MAX_LIVES, SIZE,
 };
 use bevy::prelude::*;
@@ -52,8 +53,7 @@ pub fn respawn_blocks(mut commands: Commands, block_query: Query<Entity, With<Bl
 pub fn spawn_life_bar(mut commands: Commands) {
     const X_OFFSET: f32 = 2. * BLOCK_SIZE - (BLOCK_SIZE / 2.);
     const Y_OFFSET: f32 = 2. * BLOCK_SIZE - (BLOCK_SIZE / 2.);
-    // HACK adiciona vida extra pois a função take_life rouba uma vida ao inicializar os blocos
-    for i in 0..MAX_LIVES + 1 {
+    for i in 0..MAX_LIVES {
         commands.spawn((
             SpriteBundle {
                 sprite: Sprite {
@@ -64,16 +64,9 @@ pub fn spawn_life_bar(mut commands: Commands) {
                 transform: Transform::from_xyz(X_OFFSET, i as f32 * BLOCK_SIZE + Y_OFFSET, 0.),
                 ..default()
             },
-            Heart(i),
+            Heart(),
         ));
     }
-}
-
-pub fn respawn_life_bar(mut commands: Commands, heart_query: Query<Entity, With<Heart>>) {
-    for entity in heart_query.iter() {
-        commands.entity(entity).despawn();
-    }
-    spawn_life_bar(commands);
 }
 
 pub fn spawn_buttons(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -109,42 +102,72 @@ pub fn spawn_buttons(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 pub fn check_win(
     block_query: Query<&Block>,
-    heart_query: Query<&Heart>,
     mut commands: Commands,
     mut game_over_event_writer: EventWriter<EndGame>,
 ) {
-    if let Some(head) = block_query.iter().nth(1) {
+    if let Some(head) = block_query.iter().next() {
         for block in block_query.iter() {
             if block.0 != head.0 {
                 return;
             }
         }
+
         commands.insert_resource(NextState(Some(AppState::GameOver)));
         game_over_event_writer.send(EndGame {
-            score: MAX_LIVES - heart_query.iter().len(),
+            score: NUM_BLOCKS * NUM_BLOCKS,
         });
     }
 }
 
+fn calculate_score(block_query: Query<&Block>) -> usize {
+    let color_matrix = block_query.iter().fold(
+        [[Color::NONE; MAX_LIVES]; MAX_LIVES],
+        |mut matrix, block| {
+            matrix[block.1][block.2] = block.0;
+            matrix
+        },
+    );
+    let mut modify: Vec<(usize, usize)> = Vec::new();
+    let mut visited = [[false; MAX_LIVES]; MAX_LIVES];
+
+    dfs(&mut visited, &mut modify, &color_matrix);
+
+    let mut score = 0;
+    if let Some(head) = block_query.iter().next() {
+        for i in 0..visited.len() {
+            for j in 0..visited.len() {
+                if visited[i][j] && color_matrix[i][j] == head.0 {
+                    score += 1;
+                }
+            }
+        }
+    }
+    score
+}
+
 pub fn take_life(
     mut commands: Commands,
-    changed_heart: Query<Entity, Changed<Sprite>>,
+    lives: Res<Lives>,
     heart_query: Query<Entity, With<Heart>>,
     mut game_over_event_writer: EventWriter<EndGame>,
+    block_query: Query<&Block>,
 ) {
-    if !changed_heart.is_empty() {
+    if lives.is_changed() && !lives.is_added() {
         if let Some(entity) = heart_query.iter().last() {
             commands.entity(entity).despawn();
         } else {
             commands.insert_resource(NextState(Some(AppState::GameOver)));
-            game_over_event_writer.send(EndGame { score: 0 });
+            game_over_event_writer.send(EndGame {
+                score: calculate_score(block_query),
+            });
         }
     }
 }
 
 pub fn update_color(
     keyboard_input: Res<Input<KeyCode>>,
-    mut block_query: Query<(&mut Block, &mut Sprite), Without<Heart>>,
+    mut block_query: Query<(&mut Block, &mut Sprite)>,
+    mut lives: ResMut<Lives>,
 ) {
     const KEYS: [KeyCode; 6] = [
         KeyCode::Key1,
@@ -156,12 +179,13 @@ pub fn update_color(
     ];
     for i in 0..KEYS.len() {
         if keyboard_input.just_pressed(KEYS[i]) {
-            _update_color(&mut block_query, COLORS[i])
+            _update_color(&mut block_query, COLORS[i]);
+            lives.decrement();
         }
     }
 }
 
-fn _update_color(block_query: &mut Query<(&mut Block, &mut Sprite), Without<Heart>>, color: Color) {
+fn _update_color(block_query: &mut Query<(&mut Block, &mut Sprite)>, color: Color) {
     let color_matrix = block_query.iter().fold(
         [[Color::NONE; MAX_LIVES]; MAX_LIVES],
         |mut matrix, block| {
