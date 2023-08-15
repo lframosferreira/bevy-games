@@ -21,12 +21,11 @@ pub fn get_starting_grid(number_of_shuffles: u32) -> ([[i32; 4]; 4], (i32, i32))
                 matrix[empty_pos.0 as usize][empty_pos.1 as usize] =
                     matrix[future_pos.0 as usize][future_pos.1 as usize];
                 matrix[future_pos.0 as usize][future_pos.1 as usize] = 0;
-                empty_pos = future_pos;
+                empty_pos = future_pos.clone();
                 break;
             }
         }
     }
-    println!("{:?}", empty_pos);
     (matrix, empty_pos)
 }
 
@@ -39,8 +38,8 @@ pub fn spawn_blocks(
     let window: &Window = window_query.get_single().unwrap();
     for i in 0..4 {
         for j in 0..4 {
-            let transform_x: f32 = window.width() * (i as f32 / 4.0) + window.width() / 8.0;
-            let transform_y: f32 = window.height() * (j as f32 / 4.0) + window.height() / 8.0;
+            let transform_x: f32 = window.width() * (j as f32 / 4.0) + window.width() / 8.0;
+            let transform_y: f32 = window.height() * ((3 - i) as f32 / 4.0) + window.height() / 8.0;
             if grid_status.matrix[i][j] != 0 {
                 commands.spawn((Text2dBundle {
                     text: Text::from_section(
@@ -72,10 +71,12 @@ pub fn handle_movement(
     {
         future_pos = Some((empty_pos_x, empty_pos_y - 1));
     }
+
     let window: &Window = window_query.get_single().unwrap();
     if let Some(pos) = future_pos {
-        let transform_x: f32 = window.width() * (pos.0 as f32 / 4.0) + window.width() / 8.0;
-        let transform_y: f32 = window.height() * (pos.1 as f32 / 4.0) + window.height() / 8.0;
+        println!("{:?}",future_pos);
+        let transform_x: f32 = window.width() * (pos.1 as f32 / 4.0) + window.width() / 8.0;
+        let transform_y: f32 = window.height() * ((3 - pos.0) as f32 / 4.0) + window.height() / 8.0;
         if let Some(mut block_transform) = block_query.iter_mut().find(|block_transform| {
             block_transform.translation.x == transform_x
                 && block_transform.translation.y == transform_y
@@ -96,7 +97,7 @@ pub fn insert_grid_status(mut commands: Commands) {
 }
 
 pub fn reset_grid_status(mut grid_status: ResMut<GridStatus>) {
-    let (matrix, empty_pos) = get_starting_grid(50);
+    /* let (matrix, empty_pos) = get_starting_grid(50);
     grid_status.matrix = matrix;
-    grid_status.empty_pos = empty_pos;
+    grid_status.empty_pos = empty_pos; */
 }
