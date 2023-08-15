@@ -11,7 +11,7 @@ pub fn draw_grid(mut lines: ResMut<DebugLines>) {
             0.0,
         )
     }
-    for i in 0..(WINDOW_Y / BLOCK_LENGTH) as u32 {
+    for i in 1..(WINDOW_Y / BLOCK_LENGTH) as u32 {
         lines.line(
             Vec3::new(0., BLOCK_LENGTH * i as f32, 0.),
             Vec3::new(WINDOW_X, BLOCK_LENGTH * i as f32, 0.),
