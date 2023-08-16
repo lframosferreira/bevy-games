@@ -178,14 +178,13 @@ pub fn update_color(
         KeyCode::Key6,
     ];
     for i in 0..KEYS.len() {
-        if keyboard_input.just_pressed(KEYS[i]) {
-            _update_color(&mut block_query, COLORS[i]);
+        if keyboard_input.just_pressed(KEYS[i]) && _update_color(&mut block_query, COLORS[i]) {
             lives.decrement();
         }
     }
 }
 
-fn _update_color(block_query: &mut Query<(&mut Block, &mut Sprite)>, color: Color) {
+fn _update_color(block_query: &mut Query<(&mut Block, &mut Sprite)>, color: Color) -> bool {
     let color_matrix = block_query.iter().fold(
         [[Color::NONE; MAX_LIVES]; MAX_LIVES],
         |mut matrix, block| {
@@ -207,7 +206,9 @@ fn _update_color(block_query: &mut Query<(&mut Block, &mut Sprite)>, color: Colo
                 }
             }
         }
+        return true;
     }
+    false
 }
 
 fn dfs(
