@@ -1,6 +1,5 @@
-use bevy::prelude::Resource;
-
 use super::DINO_INITIAL_VERTICAL_SPEED;
+use bevy::prelude::Resource;
 
 #[derive(Resource)]
 pub struct DinoVerticalMovement {

@@ -1,7 +1,6 @@
+use super::components::Bullet;
 use crate::game::{components::Stats, player::components::Player, WINDOW_Y};
 use bevy::prelude::*;
-
-use super::components::Bullet;
 
 pub fn spawn_bullets(
     mut commands: Commands,

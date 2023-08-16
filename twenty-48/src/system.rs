@@ -1,7 +1,6 @@
+use crate::game::{BLOCK_LENGTH, WINDOW_X, WINDOW_Y};
 use bevy::prelude::*;
 use bevy_prototype_debug_lines::DebugLines;
-
-use crate::game::{BLOCK_LENGTH, WINDOW_X, WINDOW_Y};
 
 pub fn draw_grid(mut lines: ResMut<DebugLines>) {
     for i in 0..(WINDOW_X / BLOCK_LENGTH) as u32 {

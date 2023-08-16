@@ -1,12 +1,12 @@
-use bevy::prelude::*;
-use bevy::window::PrimaryWindow;
-use rand::Rng;
-
 use super::components::{Obstacle, ObstacleKind};
 use super::resources::{ObstacleSpawnTimer, ObstacleSpeed};
 use super::{OBSTACLE_INITIAL_SPEED, OBSTACLE_SPEED_INCREASE_RATE};
 use crate::game::dinosaur::DINO_INITIAL_Y_POS;
 use crate::game::score::resources::Score;
+use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
+use rand::random;
+use rand::Rng;
 
 pub fn tick_obstacle_spawn_timer(
     mut obstacle_spawn_timer: ResMut<ObstacleSpawnTimer>,
