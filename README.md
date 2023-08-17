@@ -46,7 +46,10 @@ Inspired by [python-games](https://inventwithpython.com/pygame/)
 ## Current work
 
 - Sliding Puzzle
+- Breakout
 
 ## Future
 
 - Tetris
+- Elden Ring clone?
+- [You decide!](https://github.com/lframosferreira/bevy-games/issues/new?assignees=&labels=&projects=&template=game-request.md&title=%5BNew+Game+Request%5D+)
