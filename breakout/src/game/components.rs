@@ -4,7 +4,7 @@ use bevy::prelude::Component;
 pub struct Player;
 
 #[derive(Component)]
-pub struct Block;
+pub struct Block(pub usize);
 
 #[derive(Component)]
 pub struct Ball {

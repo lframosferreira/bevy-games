@@ -2,8 +2,8 @@ use super::components::{Ball, Block, Player};
 use super::MAX_LIVES;
 use crate::game::{WINDOW_X, WINDOW_Y};
 use bevy::prelude::*;
-use bevy::sprite::collide_aabb;
-use common::game::Lives;
+use bevy::sprite::collide_aabb::{self, Collision};
+use common::game::{Lives, Score};
 
 // https://en.wikipedia.org/wiki/Breakout_(video_game)
 const PLAYER_Y_OFFSET: f32 = 40.;
@@ -76,7 +76,7 @@ pub fn spawn_blocks(mut commands: Commands) {
     for (i, &color) in BLOCK_COLORS.iter().enumerate() {
         for j in 0..(WINDOW_X / BLOCK_WIDTH) as u32 {
             commands.spawn((
-                Block,
+                Block(BLOCK_COLORS.len() - i),
                 SpriteBundle {
                     sprite: Sprite {
                         color,
@@ -182,22 +182,32 @@ pub fn collide_ball_with_player(
 
 pub fn collide_ball_with_blocks(
     mut ball_query: Query<(&Transform, &mut Ball), With<Ball>>,
-    block_query: Query<(&Transform, Entity), With<Block>>,
+    block_query: Query<(&Transform, Entity, &Block), With<Block>>,
     mut commands: Commands,
+    mut score: ResMut<Score>,
 ) {
-    if let Ok((transform, mut ball)) = ball_query.get_single_mut() {
-        for (block, entity) in block_query.iter() {
-            // TODO check collision side so we can update the ball direction accordingly
-            if collide_aabb::collide(
-                block.translation,
+    if let Ok((ball_transform, mut ball)) = ball_query.get_single_mut() {
+        for (block_transform, entity, block) in block_query.iter() {
+            if let Some(collision) = collide_aabb::collide(
+                block_transform.translation,
                 BLOCK_SIZE,
-                transform.translation,
+                ball_transform.translation,
                 BALL_SIZE,
-            )
-            .is_some()
-            {
-                ball.is_going_up = !ball.is_going_up;
+            ) {
+                match collision {
+                    Collision::Top | Collision::Bottom => ball.is_going_up = !ball.is_going_up,
+                    _ => ball.is_going_right = !ball.is_going_right,
+                }
+
                 commands.entity(entity).despawn();
+
+                score.increment(block.0);
+
+                // We destroyed the last block
+                if block_query.iter().len() == 1 {
+                    spawn_blocks(commands);
+                }
+
                 return;
             }
         }
