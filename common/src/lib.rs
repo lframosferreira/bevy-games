@@ -1,4 +1,5 @@
 pub mod events;
+pub mod game;
 pub mod systems;
 pub mod ui;
 

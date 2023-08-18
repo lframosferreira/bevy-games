@@ -1,20 +1,26 @@
 use super::components::{Ball, Block, Player};
+use super::MAX_LIVES;
 use crate::game::{WINDOW_X, WINDOW_Y};
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb;
+use common::game::Lives;
 
 // https://en.wikipedia.org/wiki/Breakout_(video_game)
 const PLAYER_Y_OFFSET: f32 = 40.;
 const PLAYER_WIDTH: f32 = 200.;
 const PLAYER_HEIGHT: f32 = 20.;
 const PLAYER_SIZE: Vec2 = Vec2::new(PLAYER_WIDTH, PLAYER_HEIGHT);
-const PLAYER_SPEED: f32 = 400.;
+const PLAYER_SPEED: f32 = 500.;
 const BLOCK_WIDTH: f32 = 100.;
 const BLOCK_HEIGHT: f32 = 30.;
 const BLOCK_SIZE: Vec2 = Vec2::new(BLOCK_WIDTH, BLOCK_HEIGHT);
 // TODO make ball round
 const BALL_LENGTH: f32 = 10.;
 const BALL_SIZE: Vec2 = Vec2::new(BALL_LENGTH, BALL_LENGTH);
+
+pub fn reset_lives(mut commands: Commands) {
+    commands.insert_resource(Lives::new(MAX_LIVES));
+}
 
 pub fn spawn_player(mut commands: Commands) {
     commands.spawn((
@@ -50,6 +56,13 @@ pub fn move_player(
     }
 }
 
+pub fn respawn_player(mut commands: Commands, player_query: Query<Entity, With<Player>>) {
+    if let Ok(entity) = player_query.get_single() {
+        commands.entity(entity).despawn();
+    }
+    spawn_player(commands);
+}
+
 pub fn spawn_blocks(mut commands: Commands) {
     const BLOCK_Y_OFFSET: f32 = WINDOW_Y - 100.;
     const BLOCK_COLORS: [Color; 6] = [
@@ -82,6 +95,13 @@ pub fn spawn_blocks(mut commands: Commands) {
     }
 }
 
+pub fn respawn_blocks(mut commands: Commands, block_query: Query<Entity, With<Block>>) {
+    for entity in block_query.iter() {
+        commands.entity(entity).despawn();
+    }
+    spawn_blocks(commands);
+}
+
 pub fn spawn_ball(mut commands: Commands) {
     const BALL_Y_OFFSET: f32 = PLAYER_Y_OFFSET + PLAYER_HEIGHT;
     commands.spawn((
@@ -98,8 +118,20 @@ pub fn spawn_ball(mut commands: Commands) {
     ));
 }
 
-pub fn move_ball(mut ball_query: Query<(&mut Transform, &mut Ball), With<Ball>>, time: Res<Time>) {
-    if let Ok((mut transform, mut ball)) = ball_query.get_single_mut() {
+pub fn respawn_ball(mut commands: Commands, ball_query: Query<Entity, With<Ball>>) {
+    if let Ok(entity) = ball_query.get_single() {
+        commands.entity(entity).despawn();
+    }
+    spawn_ball(commands);
+}
+
+pub fn move_ball(
+    mut ball_query: Query<(&mut Transform, &mut Ball, Entity), With<Ball>>,
+    time: Res<Time>,
+    mut lives: ResMut<Lives>,
+    mut commands: Commands,
+) {
+    if let Ok((mut transform, mut ball, entity)) = ball_query.get_single_mut() {
         let translation = &mut transform.translation;
         let delta_x = ball.x_speed * time.delta_seconds();
         if ball.is_going_right {
@@ -120,12 +152,14 @@ pub fn move_ball(mut ball_query: Query<(&mut Transform, &mut Ball), With<Ball>>,
             } else {
                 ball.is_going_up = false;
             }
-        } else if translation.y - delta_y > PLAYER_Y_OFFSET + PLAYER_HEIGHT / 2. {
+        } else if translation.y - delta_y > PLAYER_Y_OFFSET {
             translation.y -= delta_y;
         } else {
-            // TODO tirar vida
-            ball.x_speed = 0.;
-            ball.y_speed = 0.;
+            lives.decrement();
+            commands.entity(entity).despawn();
+            if lives.get() > 0 {
+                spawn_ball(commands);
+            }
         }
     }
 }
@@ -134,17 +168,12 @@ pub fn collide_ball_with_player(
     mut ball_query: Query<(&Transform, &mut Ball), With<Ball>>,
     player_query: Query<&Transform, With<Player>>,
 ) {
-    if let Ok(player) = player_query.get_single() {
-        if let Ok((transform, mut ball)) = ball_query.get_single_mut() {
-            if collide_aabb::collide(
-                player.translation,
-                PLAYER_SIZE,
-                transform.translation,
-                BALL_SIZE,
-            )
-            .is_some()
-            {
-                // TODO original behavior is to update horizontal movement based on collision side
+    if let Ok(player_transform) = player_query.get_single() {
+        if let Ok((ball_transform, mut ball)) = ball_query.get_single_mut() {
+            let player_pos = player_transform.translation;
+            let ball_pos = ball_transform.translation;
+            if collide_aabb::collide(player_pos, PLAYER_SIZE, ball_pos, BALL_SIZE).is_some() {
+                ball.is_going_right = ball_pos.x >= player_pos.x;
                 ball.is_going_up = true;
             }
         }
@@ -158,9 +187,10 @@ pub fn collide_ball_with_blocks(
 ) {
     if let Ok((transform, mut ball)) = ball_query.get_single_mut() {
         for (block, entity) in block_query.iter() {
+            // TODO check collision side so we can update the ball direction accordingly
             if collide_aabb::collide(
                 block.translation,
-                PLAYER_SIZE,
+                BLOCK_SIZE,
                 transform.translation,
                 BALL_SIZE,
             )
