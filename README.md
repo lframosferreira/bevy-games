@@ -42,6 +42,12 @@ Inspired by [python-games](https://inventwithpython.com/pygame/)
   <img src="https://github.com/lframosferreira/bevy-games/assets/84649544/b290439a-3d97-44b4-a6d2-2699f0dcf228">
 </p>
 
+### Breakout
+
+<p align="center">
+  <img src="https://github.com/lframosferreira/bevy-games/assets/84649544/414a40e4-8656-434a-80df-f109ab285288">
+</p>
+
 
 ## Current work
 
