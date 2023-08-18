@@ -14,7 +14,6 @@ const PLAYER_SPEED: f32 = 500.;
 const BLOCK_WIDTH: f32 = 100.;
 const BLOCK_HEIGHT: f32 = 30.;
 const BLOCK_SIZE: Vec2 = Vec2::new(BLOCK_WIDTH, BLOCK_HEIGHT);
-// TODO make ball round
 const BALL_LENGTH: f32 = 10.;
 const BALL_SIZE: Vec2 = Vec2::new(BALL_LENGTH, BALL_LENGTH);
 
@@ -206,6 +205,10 @@ pub fn collide_ball_with_blocks(
                 // We destroyed the last block
                 if block_query.iter().len() == 1 {
                     spawn_blocks(commands);
+                }
+
+                if (block_query.iter().len() - 1) % 10 == 0 {
+                    ball.x_speed *= 1.05;
                 }
 
                 return;
