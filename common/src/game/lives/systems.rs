@@ -10,8 +10,6 @@ pub fn watch_death(
 ) {
     if lives.get() == 0 {
         commands.insert_resource(NextState(Some(AppState::GameOver)));
-        game_over_event_writer.send(EndGame {
-            score: score.score(),
-        });
+        game_over_event_writer.send(EndGame { score: score.get() });
     }
 }

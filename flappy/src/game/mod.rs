@@ -3,8 +3,8 @@ mod resources;
 mod systems;
 
 use bevy::{prelude::*, time::common_conditions::on_timer};
-use common::AppState;
-use resources::{Gravity, Score};
+use common::{game::ScorePlugin, AppState};
+use resources::Gravity;
 use std::time::Duration;
 use systems::*;
 
@@ -16,7 +16,7 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_bird)
-            .init_resource::<Score>()
+            .add_plugins(ScorePlugin)
             .add_systems(
                 Update,
                 spawn_pipe
@@ -30,7 +30,7 @@ impl Plugin for GamePlugin {
             )
             .add_systems(
                 OnExit(AppState::GameOver),
-                (respawn_bird, despawn_pipes, reset_gravity, reset_score),
+                (respawn_bird, despawn_pipes, reset_gravity),
             );
     }
 }

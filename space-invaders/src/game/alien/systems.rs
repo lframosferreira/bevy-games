@@ -1,10 +1,10 @@
 use super::components::Alien;
 use super::resources::AlienDirection;
 use crate::game::components::Stats;
-use crate::game::lives::resources::Lives;
 use crate::game::player::PLAYER_Y_OFFSET;
 use crate::game::{WINDOW_X, WINDOW_Y};
 use bevy::prelude::*;
+use common::game::Lives;
 
 const ALIEN_LINE_OFFSET: f32 = 50.;
 

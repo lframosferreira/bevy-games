@@ -9,7 +9,7 @@ use cloud::CloudPlugin;
 use dinosaur::DinosaurPlugin;
 use floor::FloorPlugin;
 use obstacle::ObstaclePlugin;
-use score::ScorePlugin;
+use score::ScoreWithTimerPlugin;
 
 pub struct GamePlugin;
 
@@ -19,7 +19,7 @@ impl Plugin for GamePlugin {
             DinosaurPlugin,
             FloorPlugin,
             ObstaclePlugin,
-            ScorePlugin,
+            ScoreWithTimerPlugin,
             CloudPlugin,
         ));
     }

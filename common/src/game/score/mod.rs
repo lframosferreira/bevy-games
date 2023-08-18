@@ -10,7 +10,7 @@ pub struct ScorePlugin;
 
 impl Plugin for ScorePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Score(0))
+        app.insert_resource(Score::default())
             .add_systems(OnExit(AppState::GameOver), reset_score);
     }
 }

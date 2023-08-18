@@ -2,9 +2,9 @@ use super::components::{Obstacle, ObstacleKind};
 use super::resources::{ObstacleSpawnTimer, ObstacleSpeed};
 use super::{OBSTACLE_INITIAL_SPEED, OBSTACLE_SPEED_INCREASE_RATE};
 use crate::game::dinosaur::DINO_INITIAL_Y_POS;
-use crate::game::score::resources::Score;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use common::game::Score;
 use rand::Rng;
 
 pub fn tick_obstacle_spawn_timer(
@@ -84,7 +84,7 @@ pub fn obstacles_movement(
 
 pub fn set_obstacle_speed(score: Res<Score>, mut obstacle_speed: ResMut<ObstacleSpeed>) {
     obstacle_speed.speed =
-        OBSTACLE_INITIAL_SPEED + OBSTACLE_SPEED_INCREASE_RATE * ((score.value / 500) as f32)
+        OBSTACLE_INITIAL_SPEED + OBSTACLE_SPEED_INCREASE_RATE * ((score.get() / 500) as f32)
 }
 
 pub fn reset_obstacle_speed(mut obstacle_speed: ResMut<ObstacleSpeed>) {
