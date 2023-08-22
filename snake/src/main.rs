@@ -21,7 +21,6 @@ fn main() {
         .add_plugins(DebugLinesPlugin::default())
         .add_plugins(CommonPlugin::default())
         .add_plugins(GamePlugin)
-        .add_systems(Update, death_sound_effect)
         .add_systems(Update, draw_grid)
         .run()
 }
