@@ -171,14 +171,10 @@ pub fn move_snake(
         // Procuramos a última posição do corpo e removemos
         // Somente se a cobra não comeu
         if !score.is_changed() || score.get() == 0 {
-            let mut min = u32::MAX;
-            let mut tail: Option<Entity> = None;
-            for (entity, body, _) in body_entities.iter() {
-                if body.count < min {
-                    min = body.count;
-                    tail = Some(entity);
-                }
-            }
+            let tail = body_entities
+                .iter()
+                .min_by_key(|(_, body, _)| body.count)
+                .map(|(entity, _, _)| entity);
             if let Some(tail) = tail {
                 commands.entity(tail).despawn();
             }

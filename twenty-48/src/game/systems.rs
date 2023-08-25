@@ -132,7 +132,7 @@ fn _update_direction(was_pressed: &[bool], matrix: &mut [[usize; 4]; 4]) {
     if was_pressed.iter().any(|key| *key) {
         for &i in rows.iter() {
             for &j in cols.iter() {
-                let (x, y) = match common_update(matrix, i, j, is_vertical, is_increment) {
+                let (x, y) = match common_update(matrix, &i, &j, &is_vertical, &is_increment) {
                     Some(value) => value,
                     None => continue,
                 };
@@ -145,7 +145,7 @@ fn _update_direction(was_pressed: &[bool], matrix: &mut [[usize; 4]; 4]) {
 
         for &i in rows.iter() {
             for &j in cols.iter() {
-                common_update(matrix, i, j, is_vertical, is_increment);
+                common_update(matrix, &i, &j, &is_vertical, &is_increment);
             }
         }
     }
@@ -153,27 +153,31 @@ fn _update_direction(was_pressed: &[bool], matrix: &mut [[usize; 4]; 4]) {
 
 fn common_update(
     matrix: &mut [[usize; 4]; 4],
-    i: usize,
-    j: usize,
-    is_vertical: bool,
-    is_increment: bool,
+    i: &usize,
+    j: &usize,
+    is_vertical: &bool,
+    is_increment: &bool,
 ) -> Option<(usize, usize)> {
-    if matrix[i][j] == 0 {
+    if matrix[*i][*j] == 0 {
         return None;
     }
-    let control = if is_vertical { i } else { j };
-    if (is_increment && control == 0) || (!is_increment && control == 3) {
+    let control = if *is_vertical { *i } else { *j };
+    if (*is_increment && control == 0) || (!*is_increment && control == 3) {
         return None;
     }
-    let delta = if is_increment {
+    let delta = if *is_increment {
         control - 1
     } else {
         control + 1
     };
-    let (x, y) = if is_vertical { (delta, j) } else { (i, delta) };
+    let (x, y) = if *is_vertical {
+        (delta, *j)
+    } else {
+        (*i, delta)
+    };
     if matrix[x][y] == 0 {
-        matrix[x][y] = matrix[i][j];
-        matrix[i][j] = 0;
+        matrix[x][y] = matrix[*i][*j];
+        matrix[*i][*j] = 0;
     }
     Some((x, y))
 }
