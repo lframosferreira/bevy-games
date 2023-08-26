@@ -64,12 +64,12 @@ pub fn handle_movement(
     keyboard_input: Res<Input<KeyCode>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
-    let empty_pos_x: i32 = grid_status.empty_pos.0;
-    let empty_pos_y: i32 = grid_status.empty_pos.1;
+    let empty_pos_x: i32 = grid_status.empty_pos.1;
+    let empty_pos_y: i32 = grid_status.empty_pos.0;
     let mut future_pos: Option<(i32, i32)> = None;
-    if keyboard_input.just_pressed(KeyCode::Up) && !is_outside_grid((empty_pos_x, empty_pos_y - 1))
+    if keyboard_input.just_pressed(KeyCode::Up) && !is_outside_grid((empty_pos_x, empty_pos_y + 1))
     {
-        future_pos = Some((empty_pos_x, empty_pos_y - 1));
+        future_pos = Some((empty_pos_x, empty_pos_y + 1));
     }
 
     let window: &Window = window_query.get_single().unwrap();
@@ -81,10 +81,12 @@ pub fn handle_movement(
             block_transform.translation.x == transform_x
                 && block_transform.translation.y == transform_y
         }) {
+            println!("{:?} {:?}", empty_pos_x, empty_pos_y);
             let new_transform_x: f32 =
                 window.width() * (empty_pos_x as f32 / 4.0) + window.width() / 8.0;
             let new_transform_y: f32 =
                 window.height() * (empty_pos_y as f32 / 4.0) + window.height() / 8.0;
+                println!("{:?} {:?}", new_transform_x, new_transform_y);
             block_transform.translation.x = new_transform_x;
             block_transform.translation.y = new_transform_y;
             grid_status.empty_pos = pos;
@@ -97,6 +99,7 @@ pub fn insert_grid_status(mut commands: Commands) {
 }
 
 pub fn reset_grid_status(mut grid_status: ResMut<GridStatus>) {
+    println!("oi");
     /* let (matrix, empty_pos) = get_starting_grid(50);
     grid_status.matrix = matrix;
     grid_status.empty_pos = empty_pos; */
