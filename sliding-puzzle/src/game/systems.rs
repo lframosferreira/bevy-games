@@ -1,4 +1,5 @@
 use super::resources::*;
+use crate::game::{AppState, EndGame};
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use rand::prelude::*;
@@ -70,37 +71,55 @@ pub fn handle_movement(
     if keyboard_input.just_pressed(KeyCode::Up) && !is_outside_grid((empty_pos_x, empty_pos_y + 1))
     {
         future_pos = Some((empty_pos_x, empty_pos_y + 1));
+    } else if keyboard_input.just_pressed(KeyCode::Down)
+        && !is_outside_grid((empty_pos_x, empty_pos_y - 1))
+    {
+        future_pos = Some((empty_pos_x, empty_pos_y - 1));
+    } else if keyboard_input.just_pressed(KeyCode::Right)
+        && !is_outside_grid((empty_pos_x - 1, empty_pos_y))
+    {
+        future_pos = Some((empty_pos_x - 1, empty_pos_y));
+    } else if keyboard_input.just_pressed(KeyCode::Left)
+        && !is_outside_grid((empty_pos_x + 1, empty_pos_y))
+    {
+        future_pos = Some((empty_pos_x + 1, empty_pos_y));
     }
-
     let window: &Window = window_query.get_single().unwrap();
     if let Some(pos) = future_pos {
-        println!("{:?}",future_pos);
-        let transform_x: f32 = window.width() * (pos.1 as f32 / 4.0) + window.width() / 8.0;
-        let transform_y: f32 = window.height() * ((3 - pos.0) as f32 / 4.0) + window.height() / 8.0;
+        let transform_x: f32 = window.width() * (pos.0 as f32 / 4.0) + window.width() / 8.0;
+        let transform_y: f32 = window.height() * ((3 - pos.1) as f32 / 4.0) + window.height() / 8.0;
         if let Some(mut block_transform) = block_query.iter_mut().find(|block_transform| {
             block_transform.translation.x == transform_x
                 && block_transform.translation.y == transform_y
         }) {
-            println!("{:?} {:?}", empty_pos_x, empty_pos_y);
             let new_transform_x: f32 =
                 window.width() * (empty_pos_x as f32 / 4.0) + window.width() / 8.0;
             let new_transform_y: f32 =
-                window.height() * (empty_pos_y as f32 / 4.0) + window.height() / 8.0;
-                println!("{:?} {:?}", new_transform_x, new_transform_y);
+                window.height() * ((3 - empty_pos_y) as f32 / 4.0) + window.height() / 8.0;
             block_transform.translation.x = new_transform_x;
             block_transform.translation.y = new_transform_y;
-            grid_status.empty_pos = pos;
+            let aux = grid_status.matrix[pos.1 as usize][pos.0 as usize];
+            grid_status.matrix[pos.1 as usize][pos.0 as usize] = 0;
+            grid_status.matrix[empty_pos_y as usize][empty_pos_x as usize] = aux;
+            grid_status.empty_pos = (pos.1, pos.0);
         }
     }
 }
 
-pub fn insert_grid_status(mut commands: Commands) {
-    commands.insert_resource(GridStatus::default());
-}
-
 pub fn reset_grid_status(mut grid_status: ResMut<GridStatus>) {
     println!("oi");
-    /* let (matrix, empty_pos) = get_starting_grid(50);
+    let (matrix, empty_pos) = get_starting_grid(300);
     grid_status.matrix = matrix;
-    grid_status.empty_pos = empty_pos; */
+    grid_status.empty_pos = empty_pos;
+}
+
+pub fn check_win(
+    mut commands: Commands,
+    grid_status: Res<GridStatus>,
+    mut game_over_event_writer: EventWriter<EndGame>,
+) {
+    if grid_status.matrix == [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 0]] {
+        commands.insert_resource(NextState(Some(AppState::GameOver)));
+        game_over_event_writer.send(EndGame { score: 0 });
+    }
 }
