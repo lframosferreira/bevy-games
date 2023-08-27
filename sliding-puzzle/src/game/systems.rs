@@ -30,6 +30,11 @@ pub fn get_starting_grid(number_of_shuffles: u32) -> ([[i32; 4]; 4], (i32, i32))
     (matrix, empty_pos)
 }
 
+#[derive(Component)]
+pub struct Block {
+    pub value: i32,
+}
+
 pub fn spawn_blocks(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -42,18 +47,23 @@ pub fn spawn_blocks(
             let transform_x: f32 = window.width() * (j as f32 / 4.0) + window.width() / 8.0;
             let transform_y: f32 = window.height() * ((3 - i) as f32 / 4.0) + window.height() / 8.0;
             if grid_status.matrix[i][j] != 0 {
-                commands.spawn((Text2dBundle {
-                    text: Text::from_section(
-                        grid_status.matrix[i][j].to_string(),
-                        TextStyle {
-                            color: Color::WHITE,
-                            font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                            font_size: NUMBER_SIZE,
-                        },
-                    ),
-                    transform: Transform::from_xyz(transform_x, transform_y, 0.0),
-                    ..default()
-                },));
+                commands.spawn((
+                    Text2dBundle {
+                        text: Text::from_section(
+                            grid_status.matrix[i][j].to_string(),
+                            TextStyle {
+                                color: Color::WHITE,
+                                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                                font_size: NUMBER_SIZE,
+                            },
+                        ),
+                        transform: Transform::from_xyz(transform_x, transform_y, 0.0),
+                        ..default()
+                    },
+                    Block {
+                        value: grid_status.matrix[i][j],
+                    },
+                ));
             }
         }
     }
@@ -106,11 +116,46 @@ pub fn handle_movement(
     }
 }
 
-pub fn reset_grid_status(mut grid_status: ResMut<GridStatus>) {
+pub fn reset_grid_status(
+    mut commands: Commands,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    mut grid_status: ResMut<GridStatus>,
+    asset_server: Res<AssetServer>,
+    mut block_query: Query<Entity, With<Block>>,
+) {
     println!("oi");
-    let (matrix, empty_pos) = get_starting_grid(300);
+    let (matrix, empty_pos) = get_starting_grid(500);
     grid_status.matrix = matrix;
     grid_status.empty_pos = empty_pos;
+    let window: &Window = window_query.get_single().unwrap();
+    for block_entity in block_query.iter_mut() {
+        commands.entity(block_entity).despawn();
+    }
+    for i in 0..4 {
+        for j in 0..4 {
+            let transform_x: f32 = window.width() * (j as f32 / 4.0) + window.width() / 8.0;
+            let transform_y: f32 = window.height() * ((3 - i) as f32 / 4.0) + window.height() / 8.0;
+            if grid_status.matrix[i][j] != 0 {
+                commands.spawn((
+                    Text2dBundle {
+                        text: Text::from_section(
+                            grid_status.matrix[i][j].to_string(),
+                            TextStyle {
+                                color: Color::WHITE,
+                                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                                font_size: NUMBER_SIZE,
+                            },
+                        ),
+                        transform: Transform::from_xyz(transform_x, transform_y, 0.0),
+                        ..default()
+                    },
+                    Block {
+                        value: grid_status.matrix[i][j],
+                    },
+                ));
+            }
+        }
+    }
 }
 
 pub fn check_win(
