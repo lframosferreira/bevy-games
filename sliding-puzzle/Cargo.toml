@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 bevy = { version = "0.11.0", features = ["wayland"] }
 rand = "0.8.5"
+ndarray = "0.15.6"
 common = { path = "../common" }
