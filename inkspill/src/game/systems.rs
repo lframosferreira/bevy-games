@@ -113,9 +113,7 @@ pub fn check_win(
         }
 
         commands.insert_resource(NextState(Some(AppState::GameOver)));
-        game_over_event_writer.send(EndGame {
-            score: NUM_BLOCKS * NUM_BLOCKS,
-        });
+        game_over_event_writer.send(EndGame::new_number(NUM_BLOCKS * NUM_BLOCKS));
     }
 }
 
@@ -157,9 +155,7 @@ pub fn take_life(
             commands.entity(entity).despawn();
         } else {
             commands.insert_resource(NextState(Some(AppState::GameOver)));
-            game_over_event_writer.send(EndGame {
-                score: calculate_score(block_query),
-            });
+            game_over_event_writer.send(EndGame::new_number(calculate_score(block_query)));
         }
     }
 }

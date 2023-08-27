@@ -108,7 +108,7 @@ pub fn update_direction(
                 });
                 if is_game_over {
                     commands.insert_resource(NextState(Some(AppState::GameOver)));
-                    game_over_event_writer.send(EndGame { score: score.get() });
+                    game_over_event_writer.send(EndGame::new_number(score.get()));
                 }
             }
         }

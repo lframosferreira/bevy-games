@@ -1,9 +1,10 @@
 use super::{
-    components::CellButton,
+    components::{BombNumber, CellButton, Overlay},
     resources::{Grid, Visited},
-    BOMB, GRID_SIZE,
+    BOMB, GRID_SIZE, NUM_BOMBS,
 };
 use bevy::prelude::*;
+use common::{events::EndGame, AppState};
 
 const BLOCK_SIZE: f32 = 60.;
 const BLOCK_OFFSET: f32 = BLOCK_SIZE / 2.;
@@ -20,49 +21,63 @@ const COLORS: [Color; 9] = [
     Color::BLACK,
 ];
 
-pub fn spawn_grid(mut commands: Commands, asset_server: Res<AssetServer>, grid: Res<Grid>) {
+pub fn spawn_grid(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let new_grid = Grid::default();
+    commands.insert_resource(new_grid);
     for i in 0..GRID_SIZE {
         for j in 0..GRID_SIZE {
             let x = BLOCK_OFFSET + j as f32 * (BLOCK_SIZE + GAP_SIZE);
             let y = BLOCK_OFFSET + i as f32 * (BLOCK_SIZE + GAP_SIZE);
-            let number = if grid.0[i][j] >= BOMB {
+            let number = if new_grid.0[i][j] >= BOMB {
                 BOMB - 1
             } else {
-                grid.0[i][j]
+                new_grid.0[i][j]
             };
             let text = if number == BOMB - 1 {
                 " ".to_string()
             } else {
                 format!("{}", number)
             };
-            if grid.0[i][j] != 0 {
-                commands.spawn(Text2dBundle {
-                    text: Text::from_section(
-                        text,
-                        TextStyle {
-                            font: asset_server.load("fonts/IosevkaNerdFont-Bold.ttf"),
-                            font_size: 60.0,
-                            color: COLORS[number],
-                        },
-                    )
-                    .with_alignment(TextAlignment::Center),
-                    transform: Transform::from_xyz(x, y, 0.),
-                    ..default()
-                });
+            if new_grid.0[i][j] != 0 {
+                commands.spawn((
+                    Text2dBundle {
+                        text: Text::from_section(
+                            text,
+                            TextStyle {
+                                font: asset_server.load("fonts/IosevkaNerdFont-Bold.ttf"),
+                                font_size: 60.0,
+                                color: COLORS[number],
+                            },
+                        )
+                        .with_alignment(TextAlignment::Center),
+                        transform: Transform::from_xyz(x, y, 0.),
+                        ..default()
+                    },
+                    BombNumber,
+                ));
             }
         }
     }
 }
 
-pub fn build_overlay(mut commands: Commands) {
+pub fn despawn_grid(mut commands: Commands, query: Query<Entity, With<BombNumber>>) {
+    for entity in query.iter() {
+        commands.entity(entity).despawn();
+    }
+}
+
+pub fn spawn_overlay(mut commands: Commands) {
     commands
-        .spawn(NodeBundle {
-            style: Style {
-                flex_direction: FlexDirection::Row,
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    flex_direction: FlexDirection::Row,
+                    ..default()
+                },
                 ..default()
             },
-            ..default()
-        })
+            Overlay,
+        ))
         .with_children(|parent| {
             for i in 0..GRID_SIZE {
                 parent
@@ -93,10 +108,16 @@ pub fn build_overlay(mut commands: Commands) {
         });
 }
 
+pub fn despawn_overlay(mut commands: Commands, overlay_query: Query<Entity, With<Overlay>>) {
+    if let Ok(entity) = overlay_query.get_single() {
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
 type InteractionBackgroundButton<'a> =
     (&'a Interaction, &'a mut BackgroundColor, &'a mut CellButton);
 
-pub fn interact_with_button(
+pub fn interact_with_overlay(
     mut button_query: Query<InteractionBackgroundButton, (Changed<Interaction>, With<CellButton>)>,
     grid: Res<Grid>,
     mut visited: ResMut<Visited>,
@@ -110,7 +131,6 @@ pub fn interact_with_button(
             // Therefore, we can't handle marks
             match *interaction {
                 Interaction::Pressed => {
-                    // TODO Handle clicking on Bomb
                     let mut visits = [[false; GRID_SIZE]; GRID_SIZE];
                     dfs((button.1, button.2), &mut visits, &grid.0);
                     visited.0 = visits;
@@ -127,15 +147,31 @@ pub fn interact_with_button(
 }
 
 pub fn reveal(
-    mut button_query: Query<(&mut CellButton, &mut BackgroundColor)>,
+    mut button_query: Query<(&mut CellButton, &mut Visibility)>,
     visited: Res<Visited>,
+    grid: Res<Grid>,
+    mut game_over_event_writer: EventWriter<EndGame>,
+    mut commands: Commands,
 ) {
-    if visited.is_changed() {
-        for (mut button, mut bg) in button_query.iter_mut() {
+    if visited.is_changed() && !visited.is_added() {
+        let mut count_unrevealed = 0;
+        for (mut button, mut visibility) in button_query.iter_mut() {
             if visited.0[button.1][button.2] {
-                *bg = Color::NONE.into();
                 button.0 = true;
+                if grid.0[button.1][button.2] >= BOMB {
+                    commands.insert_resource(NextState(Some(AppState::GameOver)));
+                    game_over_event_writer.send(EndGame::new_bool(false));
+                } else {
+                    *visibility = Visibility::Hidden;
+                }
             }
+            if *visibility != Visibility::Hidden {
+                count_unrevealed += 1;
+            }
+        }
+        if count_unrevealed == NUM_BOMBS {
+            commands.insert_resource(NextState(Some(AppState::GameOver)));
+            game_over_event_writer.send(EndGame::new_bool(true));
         }
     }
 }

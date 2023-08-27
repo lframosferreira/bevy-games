@@ -16,6 +16,6 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugins((CommonPlugin::default(), GamePlugin))
+        .add_plugins((CommonPlugin::new_unpausable(), GamePlugin))
         .run()
 }

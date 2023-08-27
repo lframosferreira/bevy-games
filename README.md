@@ -48,6 +48,12 @@ Inspired by [python-games](https://inventwithpython.com/pygame/)
   <img src="https://github.com/lframosferreira/bevy-games/assets/84649544/414a40e4-8656-434a-80df-f109ab285288">
 </p>
 
+### Mines
+
+<p align="center">
+  <img src="https://github.com/lframosferreira/bevy-games/assets/84649544/fffa41b1-d7c8-4b8b-bb1c-588f53015fc6">
+</p>
+
 
 ## Current work
 

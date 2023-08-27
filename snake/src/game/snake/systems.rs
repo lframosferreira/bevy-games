@@ -163,7 +163,7 @@ pub fn move_snake(
             //
             // Provavelmente tem um jeito melhor de fazer isso, em relação à gerência de estado.
             commands.insert_resource(NextState(Some(AppState::GameOver)));
-            game_over_event_writer.send(EndGame { score: score.get() });
+            game_over_event_writer.send(EndGame::new_number(score.get()));
             // Early return para não comer a cauda
             return;
         }

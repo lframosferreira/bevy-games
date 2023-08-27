@@ -3,6 +3,7 @@ mod resources;
 mod systems;
 
 use bevy::prelude::*;
+use common::AppState;
 use resources::*;
 use systems::*;
 
@@ -16,9 +17,13 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Grid::default())
-            .insert_resource(Visited::default())
-            .add_systems(Startup, (spawn_grid, build_overlay))
-            .add_systems(Update, (interact_with_button, reveal));
+        app.insert_resource(Visited::default())
+            .add_systems(OnEnter(AppState::InGame), (spawn_overlay, spawn_grid))
+            .add_systems(
+                Update,
+                (interact_with_overlay, reveal).run_if(in_state(AppState::InGame)),
+            )
+            .add_systems(OnEnter(AppState::GameOver), despawn_overlay)
+            .add_systems(OnExit(AppState::GameOver), despawn_grid);
     }
 }

@@ -26,23 +26,21 @@ fn build_game_over_menu(
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
     mut game_over_event_reader: EventReader<EndGame>,
-) -> Entity {
-    let mut score = 0;
-    for event in game_over_event_reader.iter() {
-        score = event.score;
-    }
-    commands
-        .spawn((get_node_bundle(), GameOverMenu {}))
-        .with_children(|parent| {
-            parent.spawn(get_title()).with_children(|parent| {
-                parent.spawn(get_text_bundle(
-                    &format!("SCORE {}", score),
-                    asset_server,
-                    get_title_text_style,
-                ));
+) {
+    if let Some(message) = game_over_event_reader.iter().last() {
+        let message = message.string.clone();
+        commands
+            .spawn((get_node_bundle(), GameOverMenu {}))
+            .with_children(|parent| {
+                parent.spawn(get_title()).with_children(|parent| {
+                    parent.spawn(get_text_bundle(
+                        &message,
+                        asset_server,
+                        get_title_text_style,
+                    ));
+                });
+                spawn_button(parent, asset_server, "Restart", ResumeButton {});
+                spawn_button(parent, asset_server, "Quit", QuitButton {});
             });
-            spawn_button(parent, asset_server, "Restart", ResumeButton {});
-            spawn_button(parent, asset_server, "Quit", QuitButton {});
-        })
-        .id()
+    }
 }

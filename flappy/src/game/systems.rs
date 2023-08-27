@@ -106,9 +106,7 @@ pub fn move_bird(
         let translation = &mut transform.translation;
         if translation.y + delta < 0. {
             commands.insert_resource(NextState(Some(AppState::GameOver)));
-            game_over_event_writer.send(EndGame {
-                score: score.get() / 2,
-            });
+            game_over_event_writer.send(EndGame::new_number(score.get() / 2));
         } else if translation.y + delta > WINDOW_Y - BIRD_LENGTH / 2. {
             translation.y = WINDOW_Y - BIRD_LENGTH / 2.;
         } else {
@@ -157,9 +155,7 @@ pub fn check_collision(
             .is_some()
             {
                 commands.insert_resource(NextState(Some(AppState::GameOver)));
-                game_over_event_writer.send(EndGame {
-                    score: score.get() / 2,
-                });
+                game_over_event_writer.send(EndGame::new_number(score.get() / 2));
             }
         }
     }

@@ -5,7 +5,7 @@ use rand::{seq::SliceRandom, thread_rng};
 #[derive(Resource, Default)]
 pub struct Visited(pub [[bool; GRID_SIZE]; GRID_SIZE]);
 
-#[derive(Resource)]
+#[derive(Resource, Clone, Copy)]
 pub struct Grid(pub [[usize; GRID_SIZE]; GRID_SIZE]);
 
 impl Grid {
