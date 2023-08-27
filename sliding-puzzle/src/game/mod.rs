@@ -14,7 +14,10 @@ impl Plugin for GamePlugin {
         app.init_resource::<GridStatus>()
             .add_event::<EndGame>()
             .add_systems(Startup, spawn_blocks)
-            .add_systems(Update, (handle_movement, check_win))
+            .add_systems(
+                Update,
+                (handle_movement, check_win).run_if(in_state(AppState::InGame)),
+            )
             .add_systems(OnExit(AppState::GameOver), reset_grid_status);
     }
 }
