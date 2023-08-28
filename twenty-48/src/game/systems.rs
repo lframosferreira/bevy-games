@@ -1,11 +1,8 @@
-use super::{components::Block, resources::Score, BLOCK_LENGTH};
+use super::{components::Block, BLOCK_LENGTH};
 use bevy::prelude::*;
+use common::game::Score;
 use common::{events::EndGame, AppState};
 use rand::{seq::IteratorRandom, thread_rng};
-
-pub fn reset_score(mut score: ResMut<Score>) {
-    score.value = 0
-}
 
 pub fn spawn_blocks(mut commands: Commands, asset_server: Res<AssetServer>) {
     let available: Vec<usize> = (0..16).collect();
@@ -72,12 +69,12 @@ pub fn update_direction(
         _update_direction(&was_pressed, &mut number_matrix);
         if original_matrix != number_matrix {
             for (entity, mut block, mut text) in block_query.iter_mut() {
-                let my_cool_number = number_matrix[block.x()][block.y()];
+                let new_number = number_matrix[block.x()][block.y()];
                 if number_matrix[block.x()][block.y()] == 0 {
                     commands.entity(entity).despawn();
-                } else if my_cool_number != block.number() {
-                    score.value += block.number();
-                    block.set_number(my_cool_number);
+                } else if new_number != block.number() {
+                    score.increment(block.number());
+                    block.set_number(new_number);
                     *text = Text::from_section(format!("{}", block.0), text_style(&asset_server));
                 }
             }
@@ -111,7 +108,7 @@ pub fn update_direction(
                 });
                 if is_game_over {
                     commands.insert_resource(NextState(Some(AppState::GameOver)));
-                    game_over_event_writer.send(EndGame { score: score.value });
+                    game_over_event_writer.send(EndGame { score: score.get() });
                 }
             }
         }
@@ -135,7 +132,7 @@ fn _update_direction(was_pressed: &[bool], matrix: &mut [[usize; 4]; 4]) {
     if was_pressed.iter().any(|key| *key) {
         for &i in rows.iter() {
             for &j in cols.iter() {
-                let (x, y) = match common_update(matrix, i, j, is_vertical, is_increment) {
+                let (x, y) = match common_update(matrix, &i, &j, &is_vertical, &is_increment) {
                     Some(value) => value,
                     None => continue,
                 };
@@ -148,7 +145,7 @@ fn _update_direction(was_pressed: &[bool], matrix: &mut [[usize; 4]; 4]) {
 
         for &i in rows.iter() {
             for &j in cols.iter() {
-                common_update(matrix, i, j, is_vertical, is_increment);
+                common_update(matrix, &i, &j, &is_vertical, &is_increment);
             }
         }
     }
@@ -156,27 +153,31 @@ fn _update_direction(was_pressed: &[bool], matrix: &mut [[usize; 4]; 4]) {
 
 fn common_update(
     matrix: &mut [[usize; 4]; 4],
-    i: usize,
-    j: usize,
-    is_vertical: bool,
-    is_increment: bool,
+    i: &usize,
+    j: &usize,
+    is_vertical: &bool,
+    is_increment: &bool,
 ) -> Option<(usize, usize)> {
-    if matrix[i][j] == 0 {
+    if matrix[*i][*j] == 0 {
         return None;
     }
-    let control = if is_vertical { i } else { j };
-    if (is_increment && control == 0) || (!is_increment && control == 3) {
+    let control = if *is_vertical { *i } else { *j };
+    if (*is_increment && control == 0) || (!*is_increment && control == 3) {
         return None;
     }
-    let delta = if is_increment {
+    let delta = if *is_increment {
         control - 1
     } else {
         control + 1
     };
-    let (x, y) = if is_vertical { (delta, j) } else { (i, delta) };
+    let (x, y) = if *is_vertical {
+        (delta, *j)
+    } else {
+        (*i, delta)
+    };
     if matrix[x][y] == 0 {
-        matrix[x][y] = matrix[i][j];
-        matrix[i][j] = 0;
+        matrix[x][y] = matrix[*i][*j];
+        matrix[*i][*j] = 0;
     }
     Some((x, y))
 }

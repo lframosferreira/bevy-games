@@ -1,7 +1,6 @@
 use super::resources::Lives;
-use crate::game::Score;
+use crate::{events::EndGame, game::score::Score, AppState};
 use bevy::prelude::*;
-use common::{events::EndGame, AppState};
 
 pub fn watch_death(
     lives: Res<Lives>,
@@ -11,12 +10,6 @@ pub fn watch_death(
 ) {
     if lives.get() == 0 {
         commands.insert_resource(NextState(Some(AppState::GameOver)));
-        game_over_event_writer.send(EndGame {
-            score: score.score(),
-        });
+        game_over_event_writer.send(EndGame { score: score.get() });
     }
-}
-
-pub fn reset_lives(mut lives: ResMut<Lives>) {
-    lives.reset();
 }

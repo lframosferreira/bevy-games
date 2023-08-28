@@ -1,10 +1,10 @@
 use bevy::prelude::Resource;
 
 #[derive(Resource, Default)]
-pub struct Score(pub usize);
+pub struct Score(usize);
 
 impl Score {
-    pub fn score(&self) -> usize {
+    pub fn get(&self) -> usize {
         self.0
     }
     pub fn increment(&mut self, delta: usize) {

@@ -1,16 +1,16 @@
-pub mod resources;
+mod resources;
 mod systems;
 
+use crate::AppState;
 use bevy::prelude::*;
-use common::AppState;
-use resources::Score;
+pub use resources::Score;
 use systems::*;
 
 pub struct ScorePlugin;
 
 impl Plugin for ScorePlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<Score>()
+        app.insert_resource(Score::default())
             .add_systems(OnExit(AppState::GameOver), reset_score);
     }
 }

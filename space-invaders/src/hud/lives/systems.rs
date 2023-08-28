@@ -1,13 +1,14 @@
 use super::components::LivesHUD;
-use crate::game::{player_sprite, Lives, LIVES};
+use crate::game::{player_sprite, MAX_LIVES};
 use bevy::prelude::*;
+use common::game::Lives;
 
 const LIVES_X_OFFSET: f32 = 30.;
 const LIVES_COL_OFFSET: f32 = 50.;
 
 pub fn spawn_lives_hud(mut commands: Commands) {
     let sprite = player_sprite();
-    for i in 0..LIVES {
+    for i in 0..MAX_LIVES {
         commands.spawn((
             SpriteBundle {
                 sprite: sprite.clone(),

@@ -1,6 +1,7 @@
 use super::components::ScoreHUD;
-use crate::{game::Score, hud::FONT_SIZE};
+use crate::hud::FONT_SIZE;
 use bevy::prelude::*;
+use common::game::Score;
 
 pub fn spawn_score_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
     const X_OFFSET: f32 = 500.;
@@ -25,7 +26,7 @@ pub fn spawn_score_hud(mut commands: Commands, asset_server: Res<AssetServer>) {
 pub fn update_score_hud(score: Res<Score>, mut score_hud_query: Query<&mut Text, With<ScoreHUD>>) {
     if let Ok(mut text) = score_hud_query.get_single_mut() {
         for section in &mut text.sections {
-            section.value = format!("Score {:0>5}", score.score());
+            section.value = format!("Score {:0>5}", score.get());
         }
     }
 }

@@ -16,8 +16,3 @@ impl Gravity {
         self.speed = MAX_SPEED
     }
 }
-
-#[derive(Resource, Default)]
-pub struct Score {
-    pub value: usize,
-}
