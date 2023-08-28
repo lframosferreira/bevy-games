@@ -1,4 +1,5 @@
 pub mod events;
+pub mod game;
 pub mod systems;
 pub mod ui;
 
@@ -18,12 +19,20 @@ pub enum AppState {
 #[derive(Default)]
 pub struct CommonPlugin {
     is_background_light: bool,
+    is_unpausable: bool,
 }
 
 impl CommonPlugin {
+    pub fn new_unpausable() -> Self {
+        Self {
+            is_background_light: false,
+            is_unpausable: true,
+        }
+    }
     pub fn new_light() -> Self {
         Self {
             is_background_light: true,
+            is_unpausable: false,
         }
     }
     /// Change text color to black
@@ -43,10 +52,12 @@ impl Plugin for CommonPlugin {
         if self.is_background_light {
             app.add_systems(Update, CommonPlugin::set_text_dark);
         }
+        if !self.is_unpausable {
+            app.add_systems(Update, (pause_game, resume_game));
+        }
         app.add_event::<EndGame>()
             .add_state::<AppState>()
-            .add_systems(Startup, spawn_camera)
-            .add_systems(Update, (pause_game, resume_game))
-            .add_plugins(MenuPlugin);
+            .add_plugins(MenuPlugin)
+            .add_systems(Startup, spawn_camera);
     }
 }

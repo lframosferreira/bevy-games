@@ -4,10 +4,10 @@ use super::{
     DINO_DOWN_Y_POS, DINO_INITIAL_VERTICAL_SPEED, DINO_INITIAL_Y_POS, DINO_X_POS, GRAVITY,
 };
 use crate::game::obstacle::components::Obstacle;
-use crate::game::score::resources::Score;
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb::collide;
 use common::events::EndGame;
+use common::game::Score;
 use common::AppState;
 
 pub fn spawn_dinosaur(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -70,9 +70,7 @@ pub fn handle_collision(
                 .is_some()
                 {
                     commands.insert_resource(NextState(Some(AppState::GameOver)));
-                    game_over_event_writer.send(EndGame {
-                        score: score.value as usize,
-                    });
+                    game_over_event_writer.send(EndGame::new_number(score.get()));
                 }
             }
         }

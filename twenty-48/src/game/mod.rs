@@ -1,10 +1,8 @@
 mod components;
-mod resources;
 mod systems;
 
 use bevy::prelude::*;
-use common::AppState;
-use resources::Score;
+use common::{game::ScorePlugin, AppState};
 use systems::*;
 
 const WINDOW_SIZE: f32 = 400.;
@@ -16,12 +14,12 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<Score>()
+        app.add_plugins(ScorePlugin)
             .add_systems(Startup, spawn_blocks)
             .add_systems(
                 Update,
                 (update_direction).run_if(in_state(AppState::InGame)),
             )
-            .add_systems(OnExit(AppState::GameOver), (respawn_blocks, reset_score));
+            .add_systems(OnExit(AppState::GameOver), respawn_blocks);
     }
 }

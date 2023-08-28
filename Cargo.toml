@@ -2,10 +2,12 @@
 resolver = "2"
 
 members = [
+    "breakout",
     "common",
     "dino",
     "flappy",
     "inkspill",
+    "minesweeper",
     "sliding-puzzle",
     "snake",
     "space-invaders",

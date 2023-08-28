@@ -1,9 +1,10 @@
 use super::{
     components::{Bird, Pipe},
-    resources::{Gravity, Score},
+    resources::Gravity,
     WINDOW_X, WINDOW_Y,
 };
 use bevy::{prelude::*, sprite::collide_aabb::collide};
+use common::game::Score;
 use common::{events::EndGame, AppState};
 use rand::Rng;
 
@@ -14,10 +15,6 @@ const PIPE_WIDTH: f32 = 60.;
 
 pub fn reset_gravity(mut gravity: ResMut<Gravity>) {
     gravity.speed = 0.
-}
-
-pub fn reset_score(mut score: ResMut<Score>) {
-    score.value = 0
 }
 
 pub fn respawn_bird(mut commands: Commands, bird_query: Query<Entity, With<Bird>>) {
@@ -109,9 +106,7 @@ pub fn move_bird(
         let translation = &mut transform.translation;
         if translation.y + delta < 0. {
             commands.insert_resource(NextState(Some(AppState::GameOver)));
-            game_over_event_writer.send(EndGame {
-                score: score.value / 2,
-            });
+            game_over_event_writer.send(EndGame::new_number(score.get() / 2));
         } else if translation.y + delta > WINDOW_Y - BIRD_LENGTH / 2. {
             translation.y = WINDOW_Y - BIRD_LENGTH / 2.;
         } else {
@@ -133,7 +128,7 @@ pub fn move_pipe(
         translation.x += PIPE_SPEED * time.delta_seconds();
         if translation.x < BIRD_X_POS && !pipe.behind {
             pipe.behind = true;
-            score.value += 1;
+            score.increment(1);
         }
         if translation.x < -PIPE_WIDTH / 2. {
             commands.entity(entity).despawn();
@@ -160,9 +155,7 @@ pub fn check_collision(
             .is_some()
             {
                 commands.insert_resource(NextState(Some(AppState::GameOver)));
-                game_over_event_writer.send(EndGame {
-                    score: score.value / 2,
-                });
+                game_over_event_writer.send(EndGame::new_number(score.get() / 2));
             }
         }
     }

@@ -1,13 +1,13 @@
 use super::components::{Direction, SnakeBody, SnakeHead};
 use super::resources::SnakeCounter;
 use crate::game::fruit::systems::spawn_fruit;
-use crate::game::score::resources::Score;
 use crate::game::SIZE;
 use crate::game::{fruit::components::Fruit, BLOCK_SIZE};
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb::collide;
 use bevy::window::PrimaryWindow;
 use common::events::EndGame;
+use common::game::Score;
 use common::AppState;
 
 const SNAKE_COLOR: Color = Color::LIME_GREEN;
@@ -163,16 +163,14 @@ pub fn move_snake(
             //
             // Provavelmente tem um jeito melhor de fazer isso, em relação à gerência de estado.
             commands.insert_resource(NextState(Some(AppState::GameOver)));
-            game_over_event_writer.send(EndGame {
-                score: score.value as usize,
-            });
+            game_over_event_writer.send(EndGame::new_number(score.get()));
             // Early return para não comer a cauda
             return;
         }
 
         // Procuramos a última posição do corpo e removemos
         // Somente se a cobra não comeu
-        if !score.is_changed() || score.value == 0 {
+        if !score.is_changed() || score.get() == 0 {
             let mut min = u32::MAX;
             let mut tail: Option<Entity> = None;
             for (entity, body, _) in body_entities.iter() {
@@ -206,7 +204,7 @@ pub fn handle_eat_fruit(
             .is_some()
             {
                 commands.entity(fruit_entity).despawn();
-                score.value += 1;
+                score.increment(1);
                 spawn_fruit(commands, window_query);
             }
         }

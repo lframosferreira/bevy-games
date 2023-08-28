@@ -6,11 +6,15 @@ use super::boss::BOSS_POINTS;
 use super::bullet::components::Bullet;
 use super::components::{HitPoints, Stats};
 use super::laser::components::Laser;
-use super::lives::resources::Lives;
 use super::player::components::Player;
-use super::score::resources::Score;
+use super::MAX_LIVES;
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb;
+use common::game::{Lives, Score};
+
+pub fn reset_lives(mut commands: Commands) {
+    commands.insert_resource(Lives::new(MAX_LIVES));
+}
 
 type ProjectileQuery = Or<(With<Bullet>, With<Laser>)>;
 
