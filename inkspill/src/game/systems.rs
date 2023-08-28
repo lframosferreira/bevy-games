@@ -1,20 +1,12 @@
 use super::{
-    components::{Block, Heart},
+    components::{Block, Buttons, ColorIndexer, Heart},
     resources::Lives,
-    BLOCK_SIZE, MAX_LIVES, SIZE,
+    BLOCK_SIZE, COLORS_NORMAL, MAX_LIVES, SIZE, WINDOW_Y,
 };
 use bevy::prelude::*;
 use common::{events::EndGame, AppState};
 
 const NUM_BLOCKS: usize = 16;
-const COLORS: [Color; 6] = [
-    Color::PINK,
-    Color::ORANGE_RED,
-    Color::GREEN,
-    Color::BLUE,
-    Color::YELLOW,
-    Color::CYAN,
-];
 
 pub fn spawn_blocks(mut commands: Commands) {
     const X_OFFSET: f32 = 4. * BLOCK_SIZE - (BLOCK_SIZE / 2.);
@@ -53,12 +45,13 @@ pub fn respawn_blocks(mut commands: Commands, block_query: Query<Entity, With<Bl
 pub fn spawn_life_bar(mut commands: Commands) {
     const X_OFFSET: f32 = 2. * BLOCK_SIZE - (BLOCK_SIZE / 2.);
     const Y_OFFSET: f32 = 2. * BLOCK_SIZE - (BLOCK_SIZE / 2.);
+    const LIFE_SIZE: Vec2 = Vec2::new(2. * BLOCK_SIZE, BLOCK_SIZE);
     for i in 0..MAX_LIVES {
         commands.spawn((
             SpriteBundle {
                 sprite: Sprite {
-                    color: Color::RED,
-                    custom_size: Some(SIZE),
+                    color: Color::MIDNIGHT_BLUE,
+                    custom_size: Some(LIFE_SIZE),
                     ..default()
                 },
                 transform: Transform::from_xyz(X_OFFSET, i as f32 * BLOCK_SIZE + Y_OFFSET, 0.),
@@ -69,34 +62,75 @@ pub fn spawn_life_bar(mut commands: Commands) {
     }
 }
 
-pub fn spawn_buttons(mut commands: Commands, asset_server: Res<AssetServer>) {
-    const Y_OFFSET: f32 = 3. * BLOCK_SIZE;
-    const X_OFFSET: f32 = 6. * BLOCK_SIZE;
-    for (i, color) in COLORS.iter().enumerate() {
-        let x = i as f32 * 2. * BLOCK_SIZE + X_OFFSET;
-        commands.spawn(Text2dBundle {
-            text: Text::from_section(
-                format!("{}", i + 1),
-                TextStyle {
-                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                    font_size: 60.0,
-                    color: Color::WHITE,
+pub fn spawn_buttons(mut commands: Commands) {
+    const Y_OFFSET: f32 = (NUM_BLOCKS as f32 + 1.) * BLOCK_SIZE + 35.;
+    const X_OFFSET: f32 = 3. * BLOCK_SIZE;
+    const BUTTON_SIZE: f32 = 80.;
+    commands
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    flex_direction: FlexDirection::Row,
+                    width: Val::Px(BUTTON_SIZE * 6.),
+                    height: Val::Px(BUTTON_SIZE),
+                    top: Val::Px(Y_OFFSET),
+                    left: Val::Px(X_OFFSET),
+                    ..default()
                 },
-            )
-            .with_alignment(TextAlignment::Center),
-            // Precisa estar em cima da cor, por isso 0.1
-            transform: Transform::from_xyz(x, Y_OFFSET, 0.1),
-            ..default()
-        });
-        commands.spawn((SpriteBundle {
-            sprite: Sprite {
-                color: *color,
-                custom_size: Some(Vec2::new(2. * BLOCK_SIZE, 2. * BLOCK_SIZE)),
                 ..default()
             },
-            transform: Transform::from_xyz(x, Y_OFFSET, 0.),
-            ..default()
-        },));
+            Buttons,
+        ))
+        .with_children(|parent| {
+            for (i, &color) in COLORS_NORMAL.iter().enumerate() {
+                parent.spawn((
+                    ButtonBundle {
+                        style: Style {
+                            width: Val::Px(BUTTON_SIZE),
+                            height: Val::Px(BUTTON_SIZE),
+                            ..default()
+                        },
+                        background_color: color.into(),
+                        ..default()
+                    },
+                    ColorIndexer(i),
+                ));
+            }
+        });
+}
+
+pub fn interact_with_buttons(
+    mut button_query: Query<
+        (&Interaction, &mut BackgroundColor, &ColorIndexer),
+        Changed<Interaction>,
+    >,
+    mut block_query: Query<(&mut Block, &mut Sprite)>,
+    mut lives: ResMut<Lives>,
+) {
+    for (interaction, mut background_color, indexer) in button_query.iter_mut() {
+        let index = indexer.0;
+        const COLOR_RATIO: f32 = 1.25;
+        let colors_hover: [Color; 6] = core::array::from_fn(|i| COLORS_NORMAL[i] * COLOR_RATIO);
+
+        match *interaction {
+            Interaction::Pressed => {
+                if update_color(&mut block_query, COLORS_NORMAL[index]) {
+                    lives.decrement();
+                }
+            }
+            Interaction::Hovered => {
+                *background_color = colors_hover[index].into();
+            }
+            Interaction::None => {
+                *background_color = COLORS_NORMAL[index].into();
+            }
+        }
+    }
+}
+
+pub fn despawn_buttons(mut commands: Commands, buttons_query: Query<Entity, With<Buttons>>) {
+    for entity in buttons_query.iter() {
+        commands.entity(entity).despawn();
     }
 }
 
@@ -160,27 +194,7 @@ pub fn take_life(
     }
 }
 
-pub fn update_color(
-    keyboard_input: Res<Input<KeyCode>>,
-    mut block_query: Query<(&mut Block, &mut Sprite)>,
-    mut lives: ResMut<Lives>,
-) {
-    const KEYS: [KeyCode; 6] = [
-        KeyCode::Key1,
-        KeyCode::Key2,
-        KeyCode::Key3,
-        KeyCode::Key4,
-        KeyCode::Key5,
-        KeyCode::Key6,
-    ];
-    for i in 0..KEYS.len() {
-        if keyboard_input.just_pressed(KEYS[i]) && _update_color(&mut block_query, COLORS[i]) {
-            lives.decrement();
-        }
-    }
-}
-
-fn _update_color(block_query: &mut Query<(&mut Block, &mut Sprite)>, color: Color) -> bool {
+fn update_color(block_query: &mut Query<(&mut Block, &mut Sprite)>, color: Color) -> bool {
     let color_matrix = block_query.iter().fold(
         [[Color::NONE; MAX_LIVES]; MAX_LIVES],
         |mut matrix, block| {
