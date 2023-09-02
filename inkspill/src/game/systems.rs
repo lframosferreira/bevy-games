@@ -1,7 +1,7 @@
 use super::{
     components::{Block, Buttons, ColorIndexer, Heart},
     resources::Lives,
-    BLOCK_SIZE, COLORS_NORMAL, MAX_LIVES, SIZE, WINDOW_Y,
+    BLOCK_SIZE, COLORS_NORMAL, MAX_LIVES, SIZE,
 };
 use bevy::prelude::*;
 use common::{events::EndGame, AppState};

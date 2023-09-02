@@ -1,7 +1,6 @@
 mod game;
 
 use bevy::prelude::*;
-use bevy_prototype_debug_lines::*;
 use common::CommonPlugin;
 use game::{GamePlugin, WINDOW_X, WINDOW_Y};
 
@@ -16,10 +15,6 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugins((
-            DebugLinesPlugin::default(),
-            CommonPlugin::new_unpausable(),
-            GamePlugin,
-        ))
+        .add_plugins((CommonPlugin::new_unpausable(), GamePlugin))
         .run()
 }
