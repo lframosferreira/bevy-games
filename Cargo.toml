@@ -6,6 +6,7 @@ members = [
     "common",
     "dino",
     "flappy",
+    "froggers",
     "inkspill",
     "minesweeper",
     "sliding-puzzle",
