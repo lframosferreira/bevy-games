@@ -22,3 +22,9 @@ impl Lives {
         self.0 = 0
     }
 }
+
+impl Default for Lives {
+    fn default() -> Self {
+        Lives(3)
+    }
+}

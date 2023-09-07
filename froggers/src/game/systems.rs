@@ -1,13 +1,10 @@
-use std::time::Duration;
-
-use super::components::{Frog, Lake, Vehicle};
+use super::components::{Frog, Lake, LeftOverFrog, SafeHaven, Vehicle};
 use super::resources::VehicleSpawnTimer;
-use crate::game::demo::components::SafeHaven;
 use crate::game::{BLOCK_LENGTH, WINDOW_X, WINDOW_Y};
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb;
-use common::events::EndGame;
-use common::AppState;
+use common::game::Lives;
+use std::time::Duration;
 
 const FROG_COLOR: Color = Color::YELLOW_GREEN;
 const FROG_WIDTH: f32 = 40.;
@@ -34,6 +31,7 @@ pub fn init_timers(mut commands: Commands) {
         .iter()
         .map(|x| Timer::from_seconds(*x, TimerMode::Repeating))
         .collect();
+    // Skip first wait and spawn directly
     for (i, v) in vec.iter_mut().enumerate() {
         v.set_elapsed(Duration::from_secs_f32(timers[i]));
     }
@@ -128,21 +126,37 @@ pub fn respawn_frog(mut commands: Commands, frog_query: Query<Entity, With<Frog>
     spawn_frog(commands);
 }
 
-pub fn move_frog(
-    mut frog_query: Query<(&mut Transform, &mut Frog), With<Frog>>,
-    keyboard_input: Res<Input<KeyCode>>,
-    mut game_over_event_writer: EventWriter<EndGame>,
+pub fn despawn_left_over_frogs(
     mut commands: Commands,
-    time: Res<Time>,
+    frog_query: Query<Entity, With<LeftOverFrog>>,
 ) {
-    if let Ok((mut transform, mut frog)) = frog_query.get_single_mut() {
+    for entity in frog_query.iter() {
+        commands.entity(entity).despawn();
+    }
+}
+
+fn handle_death(mut lives: ResMut<Lives>, mut commands: Commands, entity: Entity) {
+    lives.decrement();
+    if lives.get() > 0 {
+        commands.entity(entity).despawn();
+        spawn_frog(commands);
+    }
+}
+
+pub fn move_frog(
+    mut frog_query: Query<(&mut Transform, &mut Frog, Entity), With<Frog>>,
+    keyboard_input: Res<Input<KeyCode>>,
+    commands: Commands,
+    time: Res<Time>,
+    lives: ResMut<Lives>,
+) {
+    if let Ok((mut transform, mut frog, entity)) = frog_query.get_single_mut() {
         let translation = &mut transform.translation;
         if let Some(ride_speed) = frog.0 {
             translation.x += ride_speed * time.delta_seconds();
             // The ride made you go out of bounds, so game over
             if translation.x <= -FROG_WIDTH / 2. || translation.x >= WINDOW_X + FROG_WIDTH / 2. {
-                commands.insert_resource(NextState(Some(AppState::GameOver)));
-                game_over_event_writer.send(EndGame::new_number(0));
+                handle_death(lives, commands, entity);
             }
         }
         if keyboard_input.just_pressed(KeyCode::Right)
@@ -159,12 +173,12 @@ pub fn move_frog(
             && translation.y + BLOCK_LENGTH < WINDOW_Y - FROG_HEIGHT / 2.
         {
             translation.y += BLOCK_LENGTH;
-            // We must reset ride_speed on chaging y
+            // We must reset ride_speed on changing y
             frog.0 = None;
         }
         if keyboard_input.just_pressed(KeyCode::Down) && translation.y - BLOCK_LENGTH >= 0. {
             translation.y -= BLOCK_LENGTH;
-            // We must reset ride_speed on chaging y
+            // We must reset ride_speed on changing y
             frog.0 = None;
         }
     }
@@ -197,6 +211,12 @@ pub fn spawn_vehicles(mut commands: Commands, vehicle_timers: Res<VehicleSpawnTi
     }
 }
 
+pub fn despawn_vehicles(mut commands: Commands, vehicles_query: Query<Entity, With<Vehicle>>) {
+    for entity in vehicles_query.iter() {
+        commands.entity(entity).despawn();
+    }
+}
+
 pub fn move_vehicles(
     mut commands: Commands,
     mut vehicles_query: Query<(&mut Transform, &Vehicle, Entity), With<Vehicle>>,
@@ -224,8 +244,8 @@ pub fn collide(
     lake_query: Query<&Transform, With<Lake>>,
     haven_query: Query<&Transform, With<SafeHaven>>,
     mut frog_query: Query<(&Transform, &mut Frog, Entity), With<Frog>>,
-    mut game_over_event_writer: EventWriter<EndGame>,
     mut commands: Commands,
+    mut lives: ResMut<Lives>,
 ) {
     if let Ok((frog_transform, mut frog, entity)) = frog_query.get_single_mut() {
         let frog_translation = frog_transform.translation;
@@ -239,8 +259,8 @@ pub fn collide(
                 )
                 .is_some()
             {
-                commands.insert_resource(NextState(Some(AppState::GameOver)));
-                game_over_event_writer.send(EndGame::new_number(0));
+                handle_death(lives, commands, entity);
+                return;
             }
         }
         for haven_transform in haven_query.iter() {
@@ -255,8 +275,12 @@ pub fn collide(
                 && frog_translation.x <= haven_translation.x + BLOCK_LENGTH / 2.
                 && frog_translation.x >= haven_translation.x - BLOCK_LENGTH / 2.
             {
-                commands.entity(entity).remove::<Frog>();
+                commands
+                    .entity(entity)
+                    .remove::<Frog>()
+                    .insert(LeftOverFrog);
                 spawn_frog(commands);
+                lives.increment();
                 return;
             }
         }
@@ -292,8 +316,7 @@ pub fn collide(
                         return;
                     }
                 }
-                commands.insert_resource(NextState(Some(AppState::GameOver)));
-                game_over_event_writer.send(EndGame::new_number(0));
+                handle_death(lives, commands, entity);
             }
         }
     }

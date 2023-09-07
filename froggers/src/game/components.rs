@@ -4,6 +4,9 @@ use bevy::prelude::*;
 pub struct Frog(pub Option<f32>);
 
 #[derive(Component)]
+pub struct LeftOverFrog;
+
+#[derive(Component)]
 pub struct Lake;
 
 #[derive(Component)]

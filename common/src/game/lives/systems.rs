@@ -13,3 +13,7 @@ pub fn watch_death(
         game_over_event_writer.send(EndGame::new_number(score.get()));
     }
 }
+
+pub fn bring_back_to_life(mut commands: Commands) {
+    commands.insert_resource(Lives::default());
+}
