@@ -6,6 +6,7 @@ use bevy::prelude::*;
 use common::events::EndGame;
 use common::game::LivesPlugin;
 use common::AppState;
+use resources::*;
 use systems::*;
 
 pub const BLOCK_LENGTH: f32 = 50.0;
@@ -18,10 +19,18 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<EndGame>()
             .add_plugins(LivesPlugin)
+            .insert_resource(MaxHeight::default())
+            .insert_resource(HitLeftOverFrogs::default())
+            .insert_resource(HitHaven::default())
             .add_systems(Startup, (init_timers, spawn_frog, spawn_scenario))
             .add_systems(
                 OnExit(AppState::GameOver),
-                (respawn_frog, despawn_left_over_frogs, despawn_vehicles),
+                (
+                    respawn_frog,
+                    despawn_left_over_frogs,
+                    despawn_vehicles,
+                    reset_height,
+                ),
             )
             .add_systems(
                 Update,
@@ -29,9 +38,20 @@ impl Plugin for GamePlugin {
                     move_frog,
                     move_vehicles,
                     tick_timers,
+                    track_lives,
                     spawn_vehicles,
-                    collide,
+                    collide_frog_with_vehicles,
                 )
+                    .run_if(in_state(AppState::InGame)),
+            )
+            .add_systems(
+                Update,
+                (
+                    collide_frog_with_frogs,
+                    collide_frog_with_haven,
+                    collide_frog_with_lake,
+                )
+                    .chain()
                     .run_if(in_state(AppState::InGame)),
             );
     }

@@ -1,9 +1,9 @@
 use super::components::{Frog, Lake, LeftOverFrog, SafeHaven, Vehicle};
-use super::resources::VehicleSpawnTimer;
+use super::resources::{HitHaven, HitLeftOverFrogs, MaxHeight, VehicleSpawnTimer};
 use crate::game::{BLOCK_LENGTH, WINDOW_X, WINDOW_Y};
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb;
-use common::game::Lives;
+use common::game::{Lives, Score};
 use std::time::Duration;
 
 const FROG_COLOR: Color = Color::YELLOW_GREEN;
@@ -24,6 +24,10 @@ const VEHICLES: [Vehicle; 10] = [
     Vehicle::new(100., true, false, Color::TOMATO, 70., 4.),
     Vehicle::new(200., false, false, Color::MAROON, 120., 4.5),
 ];
+
+pub fn reset_height(mut max_height: ResMut<MaxHeight>) {
+    max_height.reset();
+}
 
 pub fn init_timers(mut commands: Commands) {
     let timers: Vec<f32> = VEHICLES.iter().map(|x| x.timer_seconds).collect();
@@ -149,6 +153,8 @@ pub fn move_frog(
     commands: Commands,
     time: Res<Time>,
     lives: ResMut<Lives>,
+    mut max_height: ResMut<MaxHeight>,
+    mut score: ResMut<Score>,
 ) {
     if let Ok((mut transform, mut frog, entity)) = frog_query.get_single_mut() {
         let translation = &mut transform.translation;
@@ -173,6 +179,10 @@ pub fn move_frog(
             && translation.y + BLOCK_LENGTH < WINDOW_Y - FROG_HEIGHT / 2.
         {
             translation.y += BLOCK_LENGTH;
+            if (translation.y / BLOCK_LENGTH).floor() > max_height.0 {
+                max_height.0 = (translation.y / BLOCK_LENGTH).floor();
+                score.increment(10);
+            }
             // We must reset ride_speed on changing y
             frog.0 = None;
         }
@@ -239,15 +249,105 @@ pub fn move_vehicles(
     }
 }
 
-pub fn collide(
+pub fn collide_frog_with_lake(
     vehicles_query: Query<(&Transform, &Vehicle), With<Vehicle>>,
     lake_query: Query<&Transform, With<Lake>>,
-    haven_query: Query<&Transform, With<SafeHaven>>,
     mut frog_query: Query<(&Transform, &mut Frog, Entity), With<Frog>>,
+    commands: Commands,
+    lives: ResMut<Lives>,
+    hit_frogs: Res<HitLeftOverFrogs>,
+    hit_haven: Res<HitHaven>,
+) {
+    if !hit_frogs.0 && !hit_haven.0 {
+        if let Ok((frog_transform, mut frog, entity)) = frog_query.get_single_mut() {
+            let frog_translation = frog_transform.translation;
+            if let Ok(lake_transform) = lake_query.get_single() {
+                if collide_aabb::collide(
+                    lake_transform.translation,
+                    LAKE_SIZE,
+                    frog_translation,
+                    FROG_SIZE,
+                )
+                .is_some()
+                {
+                    for (vehicle_transform, vehicle) in vehicles_query.iter() {
+                        let vehicle_translation = vehicle_transform.translation;
+                        let vehicle_size = vehicle.size();
+                        let vehicle_width = vehicle_size.x;
+                        if !vehicle.is_harmful
+                            && collide_aabb::collide(
+                                frog_translation,
+                                FROG_SIZE,
+                                vehicle_translation,
+                                vehicle_size,
+                            )
+                            .is_some()
+                            && frog_translation.x <= vehicle_translation.x + vehicle_width / 2.
+                            && frog_translation.x >= vehicle_translation.x - vehicle_width / 2.
+                        {
+                            frog.0 = Some(if vehicle.moves_to_left {
+                                -vehicle.speed
+                            } else {
+                                vehicle.speed
+                            });
+                            return;
+                        }
+                    }
+                    handle_death(lives, commands, entity);
+                }
+            }
+        }
+    }
+}
+
+pub fn collide_frog_with_haven(
+    haven_query: Query<&Transform, With<SafeHaven>>,
+    mut frog_query: Query<(&Transform, Entity), With<Frog>>,
     mut commands: Commands,
     mut lives: ResMut<Lives>,
+    mut score: ResMut<Score>,
+    hit_frogs: Res<HitLeftOverFrogs>,
+    mut hit_haven: ResMut<HitHaven>,
 ) {
-    if let Ok((frog_transform, mut frog, entity)) = frog_query.get_single_mut() {
+    if !hit_frogs.0 {
+        if let Ok((frog_transform, entity)) = frog_query.get_single_mut() {
+            let frog_translation = frog_transform.translation;
+            for haven_transform in haven_query.iter() {
+                let haven_translation = haven_transform.translation;
+                if collide_aabb::collide(
+                    haven_translation,
+                    SAFE_HAVEN_SIZE,
+                    frog_translation,
+                    FROG_SIZE,
+                )
+                .is_some()
+                    && frog_translation.x <= haven_translation.x + BLOCK_LENGTH / 2.
+                    && frog_translation.x >= haven_translation.x - BLOCK_LENGTH / 2.
+                {
+                    commands
+                        .entity(entity)
+                        .remove::<Frog>()
+                        .insert(LeftOverFrog);
+                    commands.insert_resource(MaxHeight::default());
+                    spawn_frog(commands);
+                    score.increment(50);
+                    lives.increment();
+                    hit_haven.0 = true;
+                    return;
+                }
+            }
+        }
+        hit_haven.0 = false;
+    }
+}
+
+pub fn collide_frog_with_vehicles(
+    vehicles_query: Query<(&Transform, &Vehicle), With<Vehicle>>,
+    frog_query: Query<(&Transform, Entity), With<Frog>>,
+    commands: Commands,
+    lives: ResMut<Lives>,
+) {
+    if let Ok((frog_transform, entity)) = frog_query.get_single() {
         let frog_translation = frog_transform.translation;
         for (transform, vehicle) in vehicles_query.iter() {
             if vehicle.is_harmful
@@ -263,61 +363,33 @@ pub fn collide(
                 return;
             }
         }
-        for haven_transform in haven_query.iter() {
-            let haven_translation = haven_transform.translation;
-            if collide_aabb::collide(
-                haven_translation,
-                SAFE_HAVEN_SIZE,
-                frog_translation,
-                FROG_SIZE,
-            )
-            .is_some()
-                && frog_translation.x <= haven_translation.x + BLOCK_LENGTH / 2.
-                && frog_translation.x >= haven_translation.x - BLOCK_LENGTH / 2.
+    }
+}
+
+pub fn collide_frog_with_frogs(
+    mut frog_query: Query<(&Transform, Entity), With<Frog>>,
+    mut other_frogs: Query<&Transform, With<LeftOverFrog>>,
+    commands: Commands,
+    lives: ResMut<Lives>,
+    mut hit_frogs: ResMut<HitLeftOverFrogs>,
+) {
+    if let Ok((frog_transform, entity)) = frog_query.get_single_mut() {
+        let frog_translation = frog_transform.translation;
+        for other in other_frogs.iter_mut() {
+            if collide_aabb::collide(frog_translation, FROG_SIZE, other.translation, FROG_SIZE)
+                .is_some()
             {
-                commands
-                    .entity(entity)
-                    .remove::<Frog>()
-                    .insert(LeftOverFrog);
-                spawn_frog(commands);
-                lives.increment();
+                handle_death(lives, commands, entity);
+                hit_frogs.0 = true;
                 return;
             }
         }
-        if let Ok(lake_transform) = lake_query.get_single() {
-            if collide_aabb::collide(
-                lake_transform.translation,
-                LAKE_SIZE,
-                frog_translation,
-                FROG_SIZE,
-            )
-            .is_some()
-            {
-                for (vehicle_transform, vehicle) in vehicles_query.iter() {
-                    let vehicle_translation = vehicle_transform.translation;
-                    let vehicle_size = vehicle.size();
-                    let vehicle_width = vehicle_size.x;
-                    if !vehicle.is_harmful
-                        && collide_aabb::collide(
-                            frog_translation,
-                            FROG_SIZE,
-                            vehicle_translation,
-                            vehicle_size,
-                        )
-                        .is_some()
-                        && frog_translation.x <= vehicle_translation.x + vehicle_width / 2.
-                        && frog_translation.x >= vehicle_translation.x - vehicle_width / 2.
-                    {
-                        frog.0 = Some(if vehicle.moves_to_left {
-                            -vehicle.speed
-                        } else {
-                            vehicle.speed
-                        });
-                        return;
-                    }
-                }
-                handle_death(lives, commands, entity);
-            }
-        }
+        hit_frogs.0 = false;
+    }
+}
+
+pub fn track_lives(lives: ResMut<Lives>) {
+    if lives.is_changed() && !lives.is_added() {
+        println!("{}", lives.get());
     }
 }
