@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use super::components::{Frog, Lake, Vehicle};
 use super::resources::VehicleSpawnTimer;
+use crate::game::demo::components::SafeHaven;
 use crate::game::{BLOCK_LENGTH, WINDOW_X, WINDOW_Y};
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb;
@@ -13,15 +14,18 @@ const FROG_WIDTH: f32 = 40.;
 const FROG_HEIGHT: f32 = 30.;
 const FROG_SIZE: Vec2 = Vec2::new(FROG_WIDTH, FROG_HEIGHT);
 const LAKE_SIZE: Vec2 = Vec2::new(WINDOW_X, 6. * BLOCK_LENGTH);
-const VEHICLES: [Vehicle; 8] = [
+const SAFE_HAVEN_SIZE: Vec2 = Vec2::new(BLOCK_LENGTH, BLOCK_LENGTH);
+const VEHICLES: [Vehicle; 10] = [
     Vehicle::new(70., true, true, Color::ORANGE, 60., 4.0),
     Vehicle::new(60., false, true, Color::ANTIQUE_WHITE, 70., 6.),
     Vehicle::new(60., true, true, Color::VIOLET, 80., 4.4),
     Vehicle::new(60., false, true, Color::SEA_GREEN, 70., 4.8),
-    Vehicle::new(90., true, true, Color::TOMATO, 40., 6.),
-    Vehicle::new(150., true, false, Color::CRIMSON, 70., 6.),
-    Vehicle::new(100., false, false, Color::MAROON, 60., 4.),
-    Vehicle::new(250., false, false, Color::MAROON, 80., 5.),
+    Vehicle::new(90., true, true, Color::CRIMSON, 40., 6.),
+    Vehicle::new(150., true, false, Color::TOMATO, 80., 6.),
+    Vehicle::new(100., false, false, Color::MAROON, 70., 4.),
+    Vehicle::new(250., false, false, Color::MAROON, 120., 5.),
+    Vehicle::new(100., true, false, Color::TOMATO, 70., 4.),
+    Vehicle::new(200., false, false, Color::MAROON, 120., 4.5),
 ];
 
 pub fn init_timers(mut commands: Commands) {
@@ -79,6 +83,27 @@ pub fn spawn_scenario(mut commands: Commands) {
             ..default()
         },
     ]);
+    const START_SAFE_X_OFFSET: f32 = 20.;
+    const SAFE_X_OFFSET: f32 = 126.;
+    let safe_spots: [(SpriteBundle, SafeHaven); 5] = core::array::from_fn(|x| {
+        (
+            SpriteBundle {
+                sprite: Sprite {
+                    color: Color::BLUE,
+                    custom_size: Some(SAFE_HAVEN_SIZE),
+                    ..default()
+                },
+                transform: Transform::from_xyz(
+                    START_SAFE_X_OFFSET + BLOCK_LENGTH / 2. + (SAFE_X_OFFSET) * x as f32,
+                    WINDOW_Y - BLOCK_LENGTH / 2.,
+                    0.5,
+                ),
+                ..default()
+            },
+            SafeHaven,
+        )
+    });
+    commands.spawn_batch(safe_spots);
 }
 
 pub fn spawn_frog(mut commands: Commands) {
@@ -197,11 +222,12 @@ pub fn move_vehicles(
 pub fn collide(
     vehicles_query: Query<(&Transform, &Vehicle), With<Vehicle>>,
     lake_query: Query<&Transform, With<Lake>>,
-    mut frog_query: Query<(&Transform, &mut Frog), With<Frog>>,
+    haven_query: Query<&Transform, With<SafeHaven>>,
+    mut frog_query: Query<(&Transform, &mut Frog, Entity), With<Frog>>,
     mut game_over_event_writer: EventWriter<EndGame>,
     mut commands: Commands,
 ) {
-    if let Ok((frog_transform, mut frog)) = frog_query.get_single_mut() {
+    if let Ok((frog_transform, mut frog, entity)) = frog_query.get_single_mut() {
         let frog_translation = frog_transform.translation;
         for (transform, vehicle) in vehicles_query.iter() {
             if vehicle.is_harmful
@@ -215,6 +241,23 @@ pub fn collide(
             {
                 commands.insert_resource(NextState(Some(AppState::GameOver)));
                 game_over_event_writer.send(EndGame::new_number(0));
+            }
+        }
+        for haven_transform in haven_query.iter() {
+            let haven_translation = haven_transform.translation;
+            if collide_aabb::collide(
+                haven_translation,
+                SAFE_HAVEN_SIZE,
+                frog_translation,
+                FROG_SIZE,
+            )
+            .is_some()
+                && frog_translation.x <= haven_translation.x + BLOCK_LENGTH / 2.
+                && frog_translation.x >= haven_translation.x - BLOCK_LENGTH / 2.
+            {
+                commands.entity(entity).remove::<Frog>();
+                spawn_frog(commands);
+                return;
             }
         }
         if let Ok(lake_transform) = lake_query.get_single() {

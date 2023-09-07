@@ -6,6 +6,9 @@ pub struct Frog(pub Option<f32>);
 #[derive(Component)]
 pub struct Lake;
 
+#[derive(Component)]
+pub struct SafeHaven;
+
 #[derive(Component, Clone, Copy)]
 pub struct Vehicle {
     pub width: f32,
