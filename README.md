@@ -54,6 +54,11 @@ Inspired by [python-games](https://inventwithpython.com/pygame/)
   <img src="https://github.com/lframosferreira/bevy-games/assets/84649544/fffa41b1-d7c8-4b8b-bb1c-588f53015fc6">
 </p>
 
+### Froggers
+
+<p align="center">
+  <img src="https://github.com/lframosferreira/bevy-games/assets/84649544/ef2201b0-c68a-4836-b92a-9b840543e42c">
+</p>
 
 ## Current work
 

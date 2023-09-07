@@ -43,7 +43,6 @@ impl Plugin for GamePlugin {
                     reset_left_over,
                     scale_timer,
                     tick_timers,
-                    track_lives,
                     spawn_vehicles,
                     collide_frog_with_vehicles,
                 )

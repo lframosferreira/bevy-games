@@ -432,9 +432,3 @@ pub fn reset_left_over(
         }
     }
 }
-
-pub fn track_lives(lives: ResMut<Lives>) {
-    if lives.is_changed() && !lives.is_added() {
-        println!("{}", lives.get());
-    }
-}
