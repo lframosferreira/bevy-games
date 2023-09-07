@@ -1,11 +1,9 @@
 mod fruit;
-mod score;
 mod snake;
 
 use bevy::prelude::*;
-use common::events::EndGame;
+use common::{events::EndGame, game::ScorePlugin};
 use fruit::FruitPlugin;
-use score::ScorePlugin;
 use snake::SnakePlugin;
 
 pub const BLOCK_SIZE: f32 = 40.0;

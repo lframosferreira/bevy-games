@@ -1,11 +1,8 @@
-use super::{components::Block, resources::Score, BLOCK_LENGTH};
+use super::{components::Block, BLOCK_LENGTH};
 use bevy::prelude::*;
+use common::game::Score;
 use common::{events::EndGame, AppState};
 use rand::{seq::IteratorRandom, thread_rng};
-
-pub fn reset_score(mut score: ResMut<Score>) {
-    score.value = 0
-}
 
 pub fn spawn_blocks(mut commands: Commands, asset_server: Res<AssetServer>) {
     let available: Vec<usize> = (0..16).collect();
@@ -72,12 +69,12 @@ pub fn update_direction(
         _update_direction(&was_pressed, &mut number_matrix);
         if original_matrix != number_matrix {
             for (entity, mut block, mut text) in block_query.iter_mut() {
-                let my_cool_number = number_matrix[block.x()][block.y()];
+                let new_number = number_matrix[block.x()][block.y()];
                 if number_matrix[block.x()][block.y()] == 0 {
                     commands.entity(entity).despawn();
-                } else if my_cool_number != block.number() {
-                    score.value += block.number();
-                    block.set_number(my_cool_number);
+                } else if new_number != block.number() {
+                    score.increment(block.number());
+                    block.set_number(new_number);
                     *text = Text::from_section(format!("{}", block.0), text_style(&asset_server));
                 }
             }
@@ -111,7 +108,7 @@ pub fn update_direction(
                 });
                 if is_game_over {
                     commands.insert_resource(NextState(Some(AppState::GameOver)));
-                    game_over_event_writer.send(EndGame { score: score.value });
+                    game_over_event_writer.send(EndGame::new_number(score.get()));
                 }
             }
         }

@@ -1,11 +1,8 @@
 mod game;
-mod systems;
 
 use bevy::prelude::*;
-use bevy_prototype_debug_lines::*;
 use common::CommonPlugin;
-use game::GamePlugin;
-use systems::{draw_grid, WINDOW_X, WINDOW_Y};
+use game::{GamePlugin, WINDOW_X, WINDOW_Y};
 
 fn main() {
     App::new()
@@ -18,9 +15,6 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugins(DebugLinesPlugin::default())
-        .add_plugins(CommonPlugin::default())
-        .add_plugins(GamePlugin)
-        .add_systems(Update, draw_grid)
+        .add_plugins((CommonPlugin::new_unpausable(), GamePlugin))
         .run()
 }
