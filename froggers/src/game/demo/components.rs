@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
-pub struct Frog;
+pub struct Frog(pub Option<f32>);
 
 #[derive(Component)]
 pub struct Lake;

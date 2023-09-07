@@ -13,14 +13,15 @@ const FROG_WIDTH: f32 = 40.;
 const FROG_HEIGHT: f32 = 30.;
 const FROG_SIZE: Vec2 = Vec2::new(FROG_WIDTH, FROG_HEIGHT);
 const LAKE_SIZE: Vec2 = Vec2::new(WINDOW_X, 6. * BLOCK_LENGTH);
-const VEHICLES: [Vehicle; 7] = [
-    Vehicle::new(70., true, true, Color::ORANGE, 300., 0.9),
-    Vehicle::new(60., false, true, Color::ANTIQUE_WHITE, 350., 1.5),
-    Vehicle::new(60., true, true, Color::VIOLET, 400., 1.1),
-    Vehicle::new(60., false, true, Color::SEA_GREEN, 350., 1.2),
-    Vehicle::new(90., true, true, Color::TOMATO, 200., 1.6),
-    Vehicle::new(150., true, false, Color::CRIMSON, 100., 4.),
-    Vehicle::new(100., false, false, Color::MAROON, 100., 3.),
+const VEHICLES: [Vehicle; 8] = [
+    Vehicle::new(70., true, true, Color::ORANGE, 60., 4.0),
+    Vehicle::new(60., false, true, Color::ANTIQUE_WHITE, 70., 6.),
+    Vehicle::new(60., true, true, Color::VIOLET, 80., 4.4),
+    Vehicle::new(60., false, true, Color::SEA_GREEN, 70., 4.8),
+    Vehicle::new(90., true, true, Color::TOMATO, 40., 6.),
+    Vehicle::new(150., true, false, Color::CRIMSON, 70., 6.),
+    Vehicle::new(100., false, false, Color::MAROON, 60., 4.),
+    Vehicle::new(250., false, false, Color::MAROON, 80., 5.),
 ];
 
 pub fn init_timers(mut commands: Commands) {
@@ -91,7 +92,7 @@ pub fn spawn_frog(mut commands: Commands) {
             transform: Transform::from_xyz(WINDOW_X / 2., BLOCK_LENGTH / 2., 1.),
             ..default()
         },
-        Frog,
+        Frog(None),
     ));
 }
 
@@ -103,11 +104,22 @@ pub fn respawn_frog(mut commands: Commands, frog_query: Query<Entity, With<Frog>
 }
 
 pub fn move_frog(
-    mut frog_query: Query<&mut Transform, With<Frog>>,
+    mut frog_query: Query<(&mut Transform, &mut Frog), With<Frog>>,
     keyboard_input: Res<Input<KeyCode>>,
+    mut game_over_event_writer: EventWriter<EndGame>,
+    mut commands: Commands,
+    time: Res<Time>,
 ) {
-    if let Ok(mut frog) = frog_query.get_single_mut() {
-        let translation = &mut frog.translation;
+    if let Ok((mut transform, mut frog)) = frog_query.get_single_mut() {
+        let translation = &mut transform.translation;
+        if let Some(ride_speed) = frog.0 {
+            translation.x += ride_speed * time.delta_seconds();
+            // The ride made you go out of bounds, so game over
+            if translation.x <= -FROG_WIDTH / 2. || translation.x >= WINDOW_X + FROG_WIDTH / 2. {
+                commands.insert_resource(NextState(Some(AppState::GameOver)));
+                game_over_event_writer.send(EndGame::new_number(0));
+            }
+        }
         if keyboard_input.just_pressed(KeyCode::Right)
             && translation.x + BLOCK_LENGTH < WINDOW_X - FROG_WIDTH / 2.
         {
@@ -122,9 +134,13 @@ pub fn move_frog(
             && translation.y + BLOCK_LENGTH < WINDOW_Y - FROG_HEIGHT / 2.
         {
             translation.y += BLOCK_LENGTH;
+            // We must reset ride_speed on chaging y
+            frog.0 = None;
         }
         if keyboard_input.just_pressed(KeyCode::Down) && translation.y - BLOCK_LENGTH >= 0. {
             translation.y -= BLOCK_LENGTH;
+            // We must reset ride_speed on chaging y
+            frog.0 = None;
         }
     }
 }
@@ -181,15 +197,16 @@ pub fn move_vehicles(
 pub fn collide(
     vehicles_query: Query<(&Transform, &Vehicle), With<Vehicle>>,
     lake_query: Query<&Transform, With<Lake>>,
-    frog_query: Query<&Transform, With<Frog>>,
+    mut frog_query: Query<(&Transform, &mut Frog), With<Frog>>,
     mut game_over_event_writer: EventWriter<EndGame>,
     mut commands: Commands,
 ) {
-    if let Ok(frog) = frog_query.get_single() {
+    if let Ok((frog_transform, mut frog)) = frog_query.get_single_mut() {
+        let frog_translation = frog_transform.translation;
         for (transform, vehicle) in vehicles_query.iter() {
             if vehicle.is_harmful
                 && collide_aabb::collide(
-                    frog.translation,
+                    frog_translation,
                     FROG_SIZE,
                     transform.translation,
                     vehicle.size(),
@@ -200,26 +217,35 @@ pub fn collide(
                 game_over_event_writer.send(EndGame::new_number(0));
             }
         }
-        if let Ok(transform) = lake_query.get_single() {
+        if let Ok(lake_transform) = lake_query.get_single() {
             if collide_aabb::collide(
-                transform.translation,
+                lake_transform.translation,
                 LAKE_SIZE,
-                frog.translation,
+                frog_translation,
                 FROG_SIZE,
             )
             .is_some()
             {
-                for (transform, vehicle) in vehicles_query.iter() {
-                    let trans = transform.translation;
+                for (vehicle_transform, vehicle) in vehicles_query.iter() {
+                    let vehicle_translation = vehicle_transform.translation;
                     let vehicle_size = vehicle.size();
-                    let width = vehicle_size.x;
-                    if !vehicle.is_harmful // Floating
-                        && collide_aabb::collide(frog.translation, FROG_SIZE, trans, vehicle_size)
-                            .is_some() // Is colliding
-                        // Is at least halfway inside
-                        && frog.translation.x <= trans.x + width / 2.
-                        && frog.translation.x >= trans.x - width / 2.
+                    let vehicle_width = vehicle_size.x;
+                    if !vehicle.is_harmful
+                        && collide_aabb::collide(
+                            frog_translation,
+                            FROG_SIZE,
+                            vehicle_translation,
+                            vehicle_size,
+                        )
+                        .is_some()
+                        && frog_translation.x <= vehicle_translation.x + vehicle_width / 2.
+                        && frog_translation.x >= vehicle_translation.x - vehicle_width / 2.
                     {
+                        frog.0 = Some(if vehicle.moves_to_left {
+                            -vehicle.speed
+                        } else {
+                            vehicle.speed
+                        });
                         return;
                     }
                 }
