@@ -7,6 +7,9 @@ pub struct Frog(pub Option<f32>);
 pub struct LeftOverFrog;
 
 #[derive(Component)]
+pub struct GameTimer;
+
+#[derive(Component)]
 pub struct Lake;
 
 #[derive(Component)]

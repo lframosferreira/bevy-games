@@ -11,7 +11,7 @@ use systems::*;
 
 pub const BLOCK_LENGTH: f32 = 50.0;
 pub const WINDOW_X: f32 = 600.;
-pub const WINDOW_Y: f32 = 650.;
+pub const WINDOW_Y: f32 = 700.;
 
 pub struct GamePlugin;
 
@@ -22,13 +22,16 @@ impl Plugin for GamePlugin {
             .insert_resource(MaxHeight::default())
             .insert_resource(HitLeftOverFrogs::default())
             .insert_resource(HitHaven::default())
-            .add_systems(Startup, (init_timers, spawn_frog, spawn_scenario))
+            .add_systems(
+                Startup,
+                (init_timers, spawn_frog, spawn_scenario, spawn_timer),
+            )
             .add_systems(
                 OnExit(AppState::GameOver),
                 (
                     respawn_frog,
+                    spawn_timer,
                     despawn_left_over_frogs,
-                    despawn_vehicles,
                     reset_height,
                 ),
             )
@@ -37,6 +40,8 @@ impl Plugin for GamePlugin {
                 (
                     move_frog,
                     move_vehicles,
+                    reset_left_over,
+                    scale_timer,
                     tick_timers,
                     track_lives,
                     spawn_vehicles,

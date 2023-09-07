@@ -1,4 +1,4 @@
-use super::components::{Frog, Lake, LeftOverFrog, SafeHaven, Vehicle};
+use super::components::{Frog, GameTimer, Lake, LeftOverFrog, SafeHaven, Vehicle};
 use super::resources::{HitHaven, HitLeftOverFrogs, MaxHeight, VehicleSpawnTimer};
 use crate::game::{BLOCK_LENGTH, WINDOW_X, WINDOW_Y};
 use bevy::prelude::*;
@@ -12,6 +12,7 @@ const FROG_HEIGHT: f32 = 30.;
 const FROG_SIZE: Vec2 = Vec2::new(FROG_WIDTH, FROG_HEIGHT);
 const LAKE_SIZE: Vec2 = Vec2::new(WINDOW_X, 6. * BLOCK_LENGTH);
 const SAFE_HAVEN_SIZE: Vec2 = Vec2::new(BLOCK_LENGTH, BLOCK_LENGTH);
+const NUM_SAFE_HAVENS: usize = 5;
 const VEHICLES: [Vehicle; 10] = [
     Vehicle::new(70., true, true, Color::ORANGE, 60., 4.0),
     Vehicle::new(60., false, true, Color::ANTIQUE_WHITE, 70., 6.),
@@ -48,6 +49,37 @@ pub fn tick_timers(mut vehicle_timers: ResMut<VehicleSpawnTimer>, time: Res<Time
     }
 }
 
+pub fn spawn_timer(mut commands: Commands) {
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                color: Color::TEAL,
+                custom_size: Some(Vec2::new(500., 30.)),
+                ..default()
+            },
+            transform: Transform::from_xyz(WINDOW_X / 2., WINDOW_Y - BLOCK_LENGTH / 2., 1.),
+            ..default()
+        },
+        GameTimer,
+    ));
+}
+
+pub fn scale_timer(
+    mut game_timer: Query<(&mut Transform, Entity), With<GameTimer>>,
+    time: Res<Time>,
+    mut commands: Commands,
+    mut lives: ResMut<Lives>,
+) {
+    if let Ok((mut timer, entity)) = game_timer.get_single_mut() {
+        const SCALE_FACTOR: f32 = 0.01;
+        timer.scale -= Vec3::X * SCALE_FACTOR * time.delta_seconds();
+        if timer.scale.min_element() < 0. {
+            commands.entity(entity).despawn();
+            lives.zero();
+        }
+    }
+}
+
 pub fn spawn_scenario(mut commands: Commands) {
     commands.spawn((
         SpriteBundle {
@@ -56,7 +88,7 @@ pub fn spawn_scenario(mut commands: Commands) {
                 custom_size: Some(LAKE_SIZE),
                 ..default()
             },
-            transform: Transform::from_xyz(WINDOW_X / 2., WINDOW_Y - 3. * BLOCK_LENGTH, 0.),
+            transform: Transform::from_xyz(WINDOW_X / 2., WINDOW_Y - 4. * BLOCK_LENGTH, 0.),
             ..default()
         },
         Lake,
@@ -87,7 +119,7 @@ pub fn spawn_scenario(mut commands: Commands) {
     ]);
     const START_SAFE_X_OFFSET: f32 = 20.;
     const SAFE_X_OFFSET: f32 = 126.;
-    let safe_spots: [(SpriteBundle, SafeHaven); 5] = core::array::from_fn(|x| {
+    let safe_spots: [(SpriteBundle, SafeHaven); NUM_SAFE_HAVENS] = core::array::from_fn(|x| {
         (
             SpriteBundle {
                 sprite: Sprite {
@@ -97,7 +129,7 @@ pub fn spawn_scenario(mut commands: Commands) {
                 },
                 transform: Transform::from_xyz(
                     START_SAFE_X_OFFSET + BLOCK_LENGTH / 2. + (SAFE_X_OFFSET) * x as f32,
-                    WINDOW_Y - BLOCK_LENGTH / 2.,
+                    WINDOW_Y - (BLOCK_LENGTH + BLOCK_LENGTH / 2.),
                     0.5,
                 ),
                 ..default()
@@ -218,12 +250,6 @@ pub fn spawn_vehicles(mut commands: Commands, vehicle_timers: Res<VehicleSpawnTi
                 vehicle,
             ));
         }
-    }
-}
-
-pub fn despawn_vehicles(mut commands: Commands, vehicles_query: Query<Entity, With<Vehicle>>) {
-    for entity in vehicles_query.iter() {
-        commands.entity(entity).despawn();
     }
 }
 
@@ -385,6 +411,25 @@ pub fn collide_frog_with_frogs(
             }
         }
         hit_frogs.0 = false;
+    }
+}
+
+pub fn reset_left_over(
+    frog_left_over: Query<Entity, With<LeftOverFrog>>,
+    mut commands: Commands,
+    timer_query: Query<(&Transform, Entity), With<GameTimer>>,
+    mut score: ResMut<Score>,
+) {
+    if frog_left_over.iter().len() == NUM_SAFE_HAVENS {
+        for entity in frog_left_over.iter() {
+            commands.entity(entity).despawn();
+        }
+        if let Ok((transform, entity)) = timer_query.get_single() {
+            const TIMER_MULTIPLIER: usize = 2;
+            score.increment(transform.translation.x.floor() as usize * TIMER_MULTIPLIER);
+            commands.entity(entity).despawn();
+            spawn_timer(commands);
+        }
     }
 }
 

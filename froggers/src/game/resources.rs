@@ -3,6 +3,9 @@ use bevy::prelude::*;
 #[derive(Resource)]
 pub struct VehicleSpawnTimer(pub Vec<Timer>);
 
+#[derive(Resource)]
+pub struct RoundTimer(pub Timer);
+
 #[derive(Resource, Default)]
 pub struct MaxHeight(pub f32);
 
