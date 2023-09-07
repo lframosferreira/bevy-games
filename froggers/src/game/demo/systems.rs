@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use super::components::{Frog, Vehicle};
+use super::components::{Frog, Lake, Vehicle};
 use super::resources::VehicleSpawnTimer;
 use crate::game::{BLOCK_LENGTH, WINDOW_X, WINDOW_Y};
 use bevy::prelude::*;
@@ -12,6 +12,7 @@ const FROG_COLOR: Color = Color::YELLOW_GREEN;
 const FROG_WIDTH: f32 = 40.;
 const FROG_HEIGHT: f32 = 30.;
 const FROG_SIZE: Vec2 = Vec2::new(FROG_WIDTH, FROG_HEIGHT);
+const LAKE_SIZE: Vec2 = Vec2::new(WINDOW_X, 6. * BLOCK_LENGTH);
 const VEHICLES: [Vehicle; 7] = [
     Vehicle::new(70., true, true, Color::ORANGE, 300., 0.9),
     Vehicle::new(60., false, true, Color::ANTIQUE_WHITE, 350., 1.5),
@@ -41,19 +42,22 @@ pub fn tick_timers(mut vehicle_timers: ResMut<VehicleSpawnTimer>, time: Res<Time
 }
 
 pub fn spawn_scenario(mut commands: Commands) {
-    commands.spawn_batch(vec![
+    commands.spawn((
         SpriteBundle {
             sprite: Sprite {
                 color: Color::AQUAMARINE,
-                custom_size: Some(Vec2::new(WINDOW_X, 6. * BLOCK_LENGTH)),
+                custom_size: Some(LAKE_SIZE),
                 ..default()
             },
             transform: Transform::from_xyz(WINDOW_X / 2., WINDOW_Y - 3. * BLOCK_LENGTH, 0.),
             ..default()
         },
+        Lake,
+    ));
+    commands.spawn_batch(vec![
         SpriteBundle {
             sprite: Sprite {
-                color: Color::BLUE,
+                color: Color::INDIGO,
                 custom_size: Some(Vec2::new(WINDOW_X, BLOCK_LENGTH)),
                 ..default()
             },
@@ -62,7 +66,7 @@ pub fn spawn_scenario(mut commands: Commands) {
         },
         SpriteBundle {
             sprite: Sprite {
-                color: Color::BLUE,
+                color: Color::INDIGO,
                 custom_size: Some(Vec2::new(WINDOW_X, BLOCK_LENGTH)),
                 ..default()
             },
@@ -130,9 +134,9 @@ pub fn spawn_vehicles(mut commands: Commands, vehicle_timers: Res<VehicleSpawnTi
         if timer.finished() {
             let vehicle = VEHICLES[i];
             let x = if vehicle.moves_to_left {
-                WINDOW_X - vehicle.width / 2.
+                WINDOW_X + vehicle.width / 2.
             } else {
-                vehicle.width / 2.
+                -vehicle.width / 2.
             };
             let lane = if i >= 5 { i + 2 } else { i + 1 };
             let y = BLOCK_LENGTH / 2. + lane as f32 * BLOCK_LENGTH;
@@ -176,21 +180,49 @@ pub fn move_vehicles(
 
 pub fn collide(
     vehicles_query: Query<(&Transform, &Vehicle), With<Vehicle>>,
+    lake_query: Query<&Transform, With<Lake>>,
     frog_query: Query<&Transform, With<Frog>>,
     mut game_over_event_writer: EventWriter<EndGame>,
     mut commands: Commands,
 ) {
     if let Ok(frog) = frog_query.get_single() {
-        for (tranform, vehicle) in vehicles_query.iter() {
+        for (transform, vehicle) in vehicles_query.iter() {
             if vehicle.is_harmful
                 && collide_aabb::collide(
                     frog.translation,
                     FROG_SIZE,
-                    tranform.translation,
+                    transform.translation,
                     vehicle.size(),
                 )
                 .is_some()
             {
+                commands.insert_resource(NextState(Some(AppState::GameOver)));
+                game_over_event_writer.send(EndGame::new_number(0));
+            }
+        }
+        if let Ok(transform) = lake_query.get_single() {
+            if collide_aabb::collide(
+                transform.translation,
+                LAKE_SIZE,
+                frog.translation,
+                FROG_SIZE,
+            )
+            .is_some()
+            {
+                for (transform, vehicle) in vehicles_query.iter() {
+                    let trans = transform.translation;
+                    let vehicle_size = vehicle.size();
+                    let width = vehicle_size.x;
+                    if !vehicle.is_harmful // Floating
+                        && collide_aabb::collide(frog.translation, FROG_SIZE, trans, vehicle_size)
+                            .is_some() // Is colliding
+                        // Is at least halfway inside
+                        && frog.translation.x <= trans.x + width / 2.
+                        && frog.translation.x >= trans.x - width / 2.
+                    {
+                        return;
+                    }
+                }
                 commands.insert_resource(NextState(Some(AppState::GameOver)));
                 game_over_event_writer.send(EndGame::new_number(0));
             }

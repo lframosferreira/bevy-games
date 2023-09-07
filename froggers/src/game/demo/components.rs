@@ -1,9 +1,10 @@
 use bevy::prelude::*;
 
-use crate::game::BLOCK_LENGTH;
-
 #[derive(Component)]
 pub struct Frog;
+
+#[derive(Component)]
+pub struct Lake;
 
 #[derive(Component, Clone, Copy)]
 pub struct Vehicle {
@@ -34,7 +35,9 @@ impl Vehicle {
         }
     }
 
+    const SIZE_HEIGHT: f32 = 45.;
+
     pub const fn size(&self) -> Vec2 {
-        Vec2::new(self.width, BLOCK_LENGTH)
+        Vec2::new(self.width, Vehicle::SIZE_HEIGHT)
     }
 }
